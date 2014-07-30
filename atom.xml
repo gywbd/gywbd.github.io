@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="http://gywbd.github.com/"/>
-  <updated>2014-07-29T07:36:21.609Z</updated>
+  <updated>2014-07-30T07:29:30.730Z</updated>
   <id>http://gywbd.github.com/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://gywbd.github.com/2014/07/23/shi-yong-exports-nodejs-interface-design-pattern/"/>
     <id>http://gywbd.github.com/2014/07/23/shi-yong-exports-nodejs-interface-design-pattern/</id>
     <published>2014-07-22T22:24:29.000Z</published>
-    <updated>2014-07-29T07:15:58.000Z</updated>
+    <updated>2014-07-30T07:01:39.000Z</updated>
     <content type="html"><![CDATA[<p>当我刚开始接触node的时候，我很困惑于为什么一个模块中即可以用<code>exports</code>，也可以用<code>module.exports</code>暴露接口，另外javascript的灵活性也导致暴露接口的写法多种多样，假设我们要定义一个输出<code>“hello world”</code>的模块，下面有两种写法来定义这个模块：</p>
 <figure class="highlight [javascript]"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//写法1</span></div><div class="line">exports.hello = <span class="function"><span class="keyword">function</span><span class="params">()</span>{</span></div><div class="line">	console.log(‘world’);</div><div class="line">}</div><div class="line"></div><div class="line"><span class="comment">//写法2</span></div><div class="line"><span class="keyword">var</span> f = {</div><div class="line">	hello : <span class="function"><span class="keyword">function</span><span class="params">()</span>{</span></div><div class="line">		console.log(‘world’);</div><div class="line">	}</div><div class="line">}</div><div class="line"></div><div class="line">module.exports = f;</div></pre></td></tr></table></figure>
 
