@@ -49,6 +49,73 @@
     <div id="main">
       
   
+    <article id="post-using-events-and-eventemitter" class="post">
+	<footer class="entry-meta-header">
+		<span class="meta-elements date">
+			<a href="/2014/09/02/using-events-and-eventemitter/" class="article-date">
+  <time datetime="2014-09-01T17:52:50.000Z" itemprop="datePublished">2014-09-2</time>
+</a>
+		</span>
+		<span class="meta-elements author">homer</span>
+		<div class="commentscount">
+			
+		</div>
+	</footer>
+	
+	<header class="entry-header">
+		
+  
+    <h1 itemprop="name" class="entry-title">
+      <a class="article-title" href="/2014/09/02/using-events-and-eventemitter/">nodejs中的events模块和EventEmitter对象</a>
+    </h1>
+  
+
+	</header>
+	<div class="entry-content">
+		
+			<p>事件是nodejs中的一个核心概念，node所声称的非阻塞IO就是通过事件驱动的模式实现的，而node使用js语言来编写程序，js本身就具有事件驱动的特性。在node中，基本上很多工作都是通过事件驱动完成的，处理用户请求、读写文件、读写数据库等都是等待某个事件触发后才开发工作。</p>
+<p>我们先node官网上提供的那个创建http服务器处理客户请求的示例：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>);</div><div class="line">http.createServer(<span class="function"><span class="keyword">function</span> <span class="params">(req, res)</span> {</span></div><div class="line">  res.writeHead(<span class="number">200</span>, {<span class="string">'Content-Type'</span>: <span class="string">'text/plain'</span>});</div><div class="line">  res.end(<span class="string">'Hello World\n'</span>);</div><div class="line">}).listen(<span class="number">1337</span>, <span class="string">'127.0.0.1'</span>);</div><div class="line">console.log(<span class="string">'Server running at http://127.0.0.1:1337/'</span>);</div></pre></td></tr></table></figure>
+
+<p>我们先加载<code>http</code>核心模块然后调用<code>http</code>的<code>createServer</code>方法创建一个http服务器，传入这个方法的函数就是用于处理客户端请求的函数，这段代码实际上监听了<code>request</code>事件，而这个传入的函数就是这个事件的处理函数，当有请求到达的时候就会触发这个事件，从而调用这个处理函数。这段代码还可以这么写。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>);</div><div class="line"><span class="keyword">var</span> server = http.createServer();</div><div class="line">server.on(<span class="string">'request'</span>,<span class="function"><span class="keyword">function</span> <span class="params">(req, res)</span> {</span></div><div class="line">  res.writeHead(<span class="number">200</span>, {<span class="string">'Content-Type'</span>: <span class="string">'text/plain'</span>});</div><div class="line">  res.end(<span class="string">'Hello World\n'</span>);</div><div class="line">});</div><div class="line">server.listen(<span class="number">1337</span>,<span class="string">'127.0.0.1'</span>);</div></pre></td></tr></table></figure>
+
+<p>这样就一眼可以看出我们监听了<code>request</code>这个事件。这个事件是<code>http</code>这个核心模块所提供的事件，node的核心模块还有很多这种类似的事件，但这些都是已经提供好的，我们怎么使用node的事件机制来编写自己的事件呢？先看一个普通的示例：</p>
+
+			
+				<p class="article-more-link">
+					<a href="/2014/09/02/using-events-and-eventemitter/#more">Read More</a>
+				</p>
+      
+    
+	</div>
+	<footer class="entry-footer">
+		<div class="entry-meta-footer">
+			<span class="category">
+				
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/language/">language</a>»<a class="article-category-link" href="/categories/language/node/">node</a>
+  </div>
+
+			</span>
+			<span class="tags">
+				
+			</span>
+		</div>
+	</footer>
+	
+</article>
+
+
+	<hr class="article-devider">
+
+
+
+
+
+
+
+  
     <article id="post-shi-yong-exports-nodejs-interface-design-pattern" class="post">
 	<footer class="entry-meta-header">
 		<span class="meta-elements date">
@@ -126,10 +193,9 @@
 	</h1>
 	<span class="copyright">
 		&copy; 2014 homer<br>
-		Modify from <a href="http://sanographix.github.io/tumblr/apollo/" target="_blank">Apollo</a> theme, designed by <a href="http://www.sanographix.net/" target="_blank">SANOGRAPHIX.NET</a><br>
-		Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
 	</span>
 </footer>
+
     
 
 <script type="text/javascript" src="http://staticcdn.b5m.com/scripts/common/jquery-1.9.1.min.js"></script>

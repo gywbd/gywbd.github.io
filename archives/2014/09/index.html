@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Category: node | Gong Yong</title>
+  <title>Archives: 2014/9 | Gong Yong</title>
   <meta name="viewport" content="width=device-width">
   <meta name="description">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Gong Yong">
-<meta property="og:url" content="http://gywbd.github.com/categories/language/node/">
+<meta property="og:url" content="http://gywbd.github.com/archives/2014/09/">
 <meta property="og:site_name" content="Gong Yong">
 <meta property="og:description">
 <meta name="twitter:card" content="summary">
@@ -85,68 +85,6 @@
 			
 				<p class="article-more-link">
 					<a href="/2014/09/02/using-events-and-eventemitter/#more">Read More</a>
-				</p>
-      
-    
-	</div>
-	<footer class="entry-footer">
-		<div class="entry-meta-footer">
-			<span class="category">
-				
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/language/">language</a>»<a class="article-category-link" href="/categories/language/node/">node</a>
-  </div>
-
-			</span>
-			<span class="tags">
-				
-			</span>
-		</div>
-	</footer>
-	
-</article>
-
-
-	<hr class="article-devider">
-
-
-
-
-
-
-
-  
-    <article id="post-shi-yong-exports-nodejs-interface-design-pattern" class="post">
-	<footer class="entry-meta-header">
-		<span class="meta-elements date">
-			<a href="/2014/07/23/shi-yong-exports-nodejs-interface-design-pattern/" class="article-date">
-  <time datetime="2014-07-22T22:24:29.000Z" itemprop="datePublished">2014-07-23</time>
-</a>
-		</span>
-		<span class="meta-elements author">homer</span>
-		<div class="commentscount">
-			
-		</div>
-	</footer>
-	
-	<header class="entry-header">
-		
-  
-    <h1 itemprop="name" class="entry-title">
-      <a class="article-title" href="/2014/07/23/shi-yong-exports-nodejs-interface-design-pattern/">exports的用法：Node.js模块的接口设计模式</a>
-    </h1>
-  
-
-	</header>
-	<div class="entry-content">
-		
-			<p>当我刚开始接触node的时候，我很困惑于为什么一个模块中即可以用<code>exports</code>，也可以用<code>module.exports</code>暴露接口，另外javascript的灵活性也导致暴露接口的写法多种多样，假设我们要定义一个输出<code>“hello world”</code>的模块，下面有两种写法来定义这个模块：</p>
-<figure class="highlight [javascript]"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//写法1</span></div><div class="line">exports.hello = <span class="function"><span class="keyword">function</span><span class="params">()</span>{</span></div><div class="line">	console.log(‘world’);</div><div class="line">}</div><div class="line"></div><div class="line"><span class="comment">//写法2</span></div><div class="line"><span class="keyword">var</span> f = {</div><div class="line">	hello : <span class="function"><span class="keyword">function</span><span class="params">()</span>{</span></div><div class="line">		console.log(‘world’);</div><div class="line">	}</div><div class="line">}</div><div class="line"></div><div class="line">module.exports = f;</div></pre></td></tr></table></figure>
-
-<p>假设我们写的这个模块的文件名为<code>hello.js</code>，执行下面的代码<br>
-			
-				<p class="article-more-link">
-					<a href="/2014/07/23/shi-yong-exports-nodejs-interface-design-pattern/#more">Read More</a>
 				</p>
       
     
