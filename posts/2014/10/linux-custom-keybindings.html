@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>在Linux的.inputrc文件中创建宏快捷键和函数快捷键 - GongYong</title>
+    <meta charset="utf-8">
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link media="all" href="/css/style.css" type="text/css" rel="stylesheet" />
+
+<link href="/css/hljs.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+<header>
+    <a href='/'><strong>Gong Yong</strong></a>的Blog
+    <!--
+    我的 <a href="https://github.com/gywbd">GitHub</a>
+    ，
+    以及 <a href="/aboutMe.html">个人简介</a>。
+    -->
+</header>
+
+
+
+<section class="post">
+
+    <header>
+        <h2 class="title">在Linux的.inputrc文件中创建宏快捷键和函数快捷键</h2>
+        <time datetime="2014-10-23" pubdate="">
+            2014-10-23
+        </time>
+    </header>
+
+    <section>
+        <p>
+Readline还提供了自定义快捷的方式，你可以在home下的.inputrc文件中创建自定义快捷键。
+</p>
+<p>
+自定义的快捷键有两种类型：
+</p>
+<ol class="article-list">
+    <li>宏</li>
+    <li>函数</li>
+</ol>
+
+<h3>
+宏
+</h3>
+<p>
+你可以创建一个快捷键，它执行的时候会在光标的当前位置插入一串字符。在.inputrc文件（如果文件不存在则创建一个）中以以下格式输入一行字符。
+</p>
+<pre>&lt;key combination&gt;: "&lt;string of characters&gt;"
+</pre>
+<p>
+例如，如果我经常需要重定向输出到~/debug_output.txt。我可以在.inputrc中定义一个宏：
+</p>
+<pre>Control-g: " &gt; ~/debug_output.txt"
+</pre>
+<p>
+现在只要我输入组合键Control-g，这个重定向语句就会被添加到我的光标后面。
+</p>
+<p>
+当你创建宏的时候记住下面几点：
+</p>
+<ul class="article-list">
+    <li>你可以用英语拼出（对于这一点，你可以查看bash的man页面的“Readline Key Bindings”一节）</li>
+    <li>由宏插入的字符序列必须使用双引号(")引用起来</li>
+    <li>上面示例中的Control-g很模糊，最好找一个跟创建的宏的意思有点关联的快捷键</li>
+    <li>有可能会覆盖默认快捷键（这点需要切记）</li>
+    <li>为了让快捷键生效，你必须创建一个新的shell实例（.inputrc是在shell启动的时候执行的）</li>
+</ul>
+
+<h3>
+函数
+</h3>
+<p>
+你还可以创建一个快捷键调用一个函数。Readline提供了很多提前定义好可供选择的函数。将一个快捷键映射到函数的格式为：
+</p>
+<pre>&lt;key combination&gt;: &lt;function-name&gt;
+</pre>
+<p>
+<a href="http://www.gnu.org/software/bash/manual/html_node/Bindable-Readline-Commands.html#Bindable-Readline-Commands">GNU的Readline手册</a>中有一个可用的预定义函数的列表。
+</p>
+<p>
+你也可以自定义函数，不过这需要用C语言来写，这不是本教程所要介绍的东西，也许以后会写一篇专门介绍这方面内容的教程。
+</p>
+
+<p>
+有一个非常有用的预定义函数——菜单补全（menu-complete），它提供了另外一种自动补全方式。
+</p>
+<p>
+默认的自动补全方式（使用TAB键）是：
+</p>
+<ul class="article-list">
+    <li>在唯一匹配的情况下补全命令/路径/文件名</li>
+    <li>如果有多个匹配则显示一个列表列出所有的匹配</li>
+</ul>
+<p>
+菜单补全会循环输出匹配的结果，每次函数调用的时候会输出下一个匹配项。这种补全方式有时候会很有用，特别是在自动补全长文件名的时候。在下面的语句添加到.inputrc中可以将TAB键映射到这种补全方式。
+</p>
+<pre>TAB: menu-complete
+</pre>
+<p>
+注意当你在.inputrc文件中添加了这条语句后，并不会在当前shell中马上生效，你需要重新创建一个shell实例来加载新的.inputrc。
+</p>
+<p>
+在这篇文章中我们了解到Linux命令行的快捷键都是Readline定义的。快捷键有两种类型：
+</p>
+<ul class="article-list">
+    <li>宏：展开一串字符</li>
+    <li>函数：执行一个动作</li>
+</ul>
+<p>
+Readline提供了一系列的默认快捷键，同时也提供了在.inputrc自定义快捷键的方法。最后我们可以使用下面的命令查看所有的快捷键：
+</p>
+<pre>bind -p
+</pre>
+    </section>
+
+    <footer>
+        <section class="followupActions">
+            如果你喜欢这篇文章，你可以在下面发表评论，你可能也会有兴趣<a href="/">浏览其他文章</a> 。
+        </section>
+    </footer>
+
+
+
+    <div id="SOHUCS" sid="8f423c70-75e9-11e4-8a0a-73dfd1b51c92"></div>
+</section>
+
+
+
+
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script src='/js/highlight.min.js'></script>
+<script>
+(function($){
+ $(function(){
+     hljs.configure({
+        tabReplace: '    '
+    });
+     $('.post pre').each(function(i,block){
+         hljs.highlightBlock(block);
+     });
+     //hljs.initHighlightingOnLoad();
+ });
+
+ }(jQuery));
+</script>
+<!--高速版，加载速度快，使用前需测试页面的兼容性-->
+<script>
+  (function(){
+    var appid = 'cyruMmQl9',
+    conf = 'prod_56838f5e72885e1172b2849c0d1c4b13';
+    var doc = document,
+    s = doc.createElement('script'),
+    h = doc.getElementsByTagName('head')[0] || doc.head || doc.documentElement;
+    s.type = 'text/javascript';
+    s.charset = 'utf-8';
+    s.src =  'http://assets.changyan.sohu.com/upload/changyan.js?conf='+ conf +'&appid=' + appid;
+    h.insertBefore(s,h.firstChild);
+    window.SCS_NO_IFRAME = true;
+  })()
+</script>                
+</body>
+</html>
+
+

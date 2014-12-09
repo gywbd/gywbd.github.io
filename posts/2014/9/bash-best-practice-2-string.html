@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>bash最佳实践2：使用字符串 - GongYong</title>
+    <meta charset="utf-8">
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link media="all" href="/css/style.css" type="text/css" rel="stylesheet" />
+
+<link href="/css/hljs.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+<header>
+    <a href='/'><strong>Gong Yong</strong></a>的Blog
+    <!--
+    我的 <a href="https://github.com/gywbd">GitHub</a>
+    ，
+    以及 <a href="/aboutMe.html">个人简介</a>。
+    -->
+</header>
+
+
+
+<section class="post">
+
+    <header>
+        <h2 class="title">bash最佳实践2：使用字符串</h2>
+        <time datetime="2014-09-10" pubdate="">
+            2014-09-10
+        </time>
+    </header>
+
+    <section>
+        <blockquote>
+<p>
+这个系列的文章是Peteris Krumins写的One-Liners Explained系列的Bash部分，这个系列讲解了一些bash的最佳实践、通用方法和小技巧，以及怎么高效使用bash的内置命令以及bash程序语言结构。
+</p>
+
+<p>
+**One-Liner的意思是简短，正如其名，这个系列的内容组织都尽可能简短，基本上每个用法、操作、技巧、知识点都是通过一行命令作为示例来讲解，我个人很赞赏这种组织内容的方式。
+</p>
+</blockquote>
+
+<p>
+这一章是这个系列的第一部分，主要是讲解bash中跟字符串相关的一些东西。
+</p>
+
+<h3>
+1 生成a-z的字母表
+</h3>
+
+<pre>
+$ echo {a..z}
+</pre>
+
+<p>
+这个命令使用了括号展开。括号展开是一种生成任意字符串的机制。这个命令使用序列表达式的形式{x..y}，x和y都是单字符。序列表达式会按字母顺序输出x到y的所有字符，包括x和y。
+</p>
+
+<p>
+如果你上面的命令，它会打印字母表的所有字母。
+</p>
+
+<pre>
+$ echo {a..z}
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+</pre>
+
+
+<h3>
+2 打印a-z的字符，字母间没有空格
+</h3>
+
+<pre>
+$ printf “%c” {a..z}
+</pre>
+
+<p>
+这个bash技巧很牛逼，估计99.99%的bash用户都不知道。如果你给printf函数提供一个列表作为参数，它会遍历这个列表并对每个列表项使用提供的格式化参数进行格式化。printf可以进行遍历操作！！叼炸天！！！
+</p>
+
+<p>
+输出结果为：
+</p>
+
+<pre>
+abcdefghijklmnopqrstuvwxyz
+</pre>
+
+<p>
+上面的输出并非以换行符结束，因为格式字符串“%c”中不包含换行符\n。如果想以换行符结束，只需要将$’\n’加到字符列表中输出就可以：
+</p>
+
+<pre>
+$ printf “%c” {a..z} $’\n’
+</pre>
+
+<p>
+$’\n’是bash中惯用的表示换行符的方式。printf会输出a到z的所有字母，然后输出一个换行符。
+</p>
+
+<p>
+另外一种在尾部添加换行符的方式是使用echo输出printf打印的内容：
+</p>
+
+<pre>
+$ echo $(printf “%c”{a..z})
+</pre>
+
+<p>
+这里用到了命令替换$(…)，$(printf “%c” {a..z})表示printf “%c”{a..z}输出的内容，然后用echo打印这个内容，echo会在输出的内容后面添加换行符。
+</p>
+
+<p>
+如果你想在一列输出所有的字母，只需要在每个字母字符后面添加一个换行符。
+</p>
+
+<pre>
+$ printf "%c\n" {a..z}
+</pre>
+
+<p>
+输出为：
+</p>
+
+<pre>
+a
+b
+...
+z
+</pre>
+
+<p>
+如果你想将printf输出的结果赋值给一个变量，可以使用-v选项：
+</p>
+
+<pre>
+$ printf -v alphabet “%c” {a..z}
+</pre>
+
+<p>
+这个命令执行后会将abcdefghijklmnopqrstuvwxyz赋值给变量$alphabet。
+</p>
+
+<p>
+同样的你也可以输出1到100的数字
+</p>
+
+<pre>
+$ echo {1..100}
+</pre>
+
+<p>
+输出为：
+</p>
+
+<pre>
+1 2 3 ... 100
+</pre>
+
+<p>
+如果你不记得这个方法，你可以使用seq命令生成一个数字序列
+</p>
+
+<pre>
+$ seq 1 100
+</pre>
+
+<p>
+3 在数字0-9前面加一个0
+</p>
+
+<pre>
+$ printf “%02d ” {0..9}
+</pre>
+
+<p>
+我们再次用到了printf循环操作的特性。这次格式字符串为”%02d “，这个意思是“在整数前面加一个0”，这个命令中用于循环的列表是0-9的整数，它是由括号展开产生的。
+</p>
+
+<p>
+输出为：
+</p>
+
+<pre>
+00 01 02 03 04 05 06 07 08 09
+</pre>
+
+<p>
+如果你使用的是第四版的bash，你可以直接用括号展开实现这个功能：
+</p>
+
+<pre>
+$ echo {00..09}
+</pre>
+
+<p>
+老版bash不支持这个特性。
+</p>
+
+<h3>
+4. 产生30个英语单词
+</h3>
+
+<pre>
+$ echo {w,t,}h{e{n{,ce{,forth}},re{,in,fore,with{,al}}},ither,at}
+</pre>
+
+<p>
+这里用到了多个括号展开，下面是输出的结果：
+</p>
+
+<pre>
+when whence whenceforth where wherein wherefore wherewith wherewithal whither what then thence thenceforth there therein therefore therewith therewithal thither that hen hence henceforth here herein herefore herewith herewithal hither hat
+</pre>
+	
+<p>
+很屌吧！
+</p>
+
+<p>
+现在看看它是怎么实现的——使用符号扩展可以生成单词/符号的排列组合。例如：
+</p>
+
+<pre>
+$ echo {a,b,c}{1,2,3}
+</pre>
+
+<p>
+这个命令会输出a1 a2 a3 b1 b2 b3 c1 c2 c3。它会先用a跟{1,2,3}中的每个元素组合，然后用b跟{1,2,3}的每个元素组合，最后是c。
+</p>
+
+<p>
+这里示例只是以一种比较聪明的方式将这些括号组合起来，它们展开的时候就会输出所有这些英语单词。
+</p>
+
+<h3>
+5. 输出10个同样的字符串
+</h3>
+
+<pre>
+$ echo foo{,,,,,,,,,,}
+</pre>
+
+<p>
+再一次用到了括号展开功能。这个命令中foo会跟10个空字符串组合，所以最终就输出了10个foo：
+</p>
+
+<pre>
+foo foo foo foo foo foo foo foo foo foo foo
+</pre>
+
+<p>
+6. 连接两个字符串
+</p>
+
+<pre>
+$ echo “$x$y”
+</pre>
+
+<p>
+这个命令只是简单的将两个变量连接在一起。如果x的值为foo，y的值为bar，最终的结果就是foobar。
+</p>
+
+<p>
+注意这里用双引号把$x$y引用起来了。如果不引用它们的话，echo将把$x$y作为一般的参数解析，它首先会解析这两个变量的值，然后看下它们是否是命令行选项。所以如果$x是以-开头的字符串，它会被当做一个命令行选项而不是echo的参数：
+</p>
+
+<pre>
+x=-n
+y=“ foo ”
+echo $x$y
+</pre>
+
+<p>
+输出为：
+</p>
+
+<pre>
+foo
+</pre>
+
+<p>
+如果加了引号的话：
+</p>
+
+<pre>
+x=-n
+y=" foo"
+echo "$x$y"
+</pre>
+
+<p>
+输出为：
+</p>
+
+<pre>
+-n foo
+</pre>
+
+<p>
+不过如果你只是想将字符串连接后的值赋值给一个变量，可以不用引号：
+</p>
+<pre>
+var=$x$y
+</pre>
+
+
+<h3>
+7. 用指定字符分割字符串
+</h3>
+<p>
+假设你有一个变量$str，它的值为“foo-bar-baz”，你想用中划线分割它，使用read命令时设置IFS可以轻易实现这个功能：
+</p>
+
+<pre>
+$ IFS=- read -r x y z &lt;&lt;&lt; "$str"
+</pre>
+
+<p>
+这个命令中使用了read命令从标准输入读取数据并赋值给变量x y z，我们将IFS设置为-，这个就是用于分割字符串的字符。如果read中指定了多个变量，它会将读取到的每行字符串用IFS中的字符分割然后将每个字段依次赋值给read中的变量。
+</p>
+
+<p>
+在这个示例中$x被赋值为foo，$y被赋值为bar，$z被赋值为baz。
+</p>
+
+<p>
+另外请注意一下&lt;&lt;&lt;操作符。这个叫做here-string，它可以把字符串的值传递给命令的标准输入，也被称为内联输入重定向符。在这个示例中$str就是read命令的标准输入。
+</p>
+
+<p>
+你也可以将分割后的字段值保存在一个数组中：
+</p>
+
+<pre>
+$ IFS=- read -ra parts &lt;&lt;&lt; “foo-bar-baz”
+</pre>
+
+<p>
+read命令的选项-a可以让read命令将分割的单词保存到一个给定的数组中。在这个示例中这个数组就是parts。
+</p>
+
+<p>
+你可以通过通过${parts[0]}, ${parts[1]}和${parts[2]}的形式访问数组，也可以使用${parts[@]}显示所有元素。
+</p>
+
+<h3>
+8. 一个字符一个字符处理字符串
+</h3>
+
+<pre>
+$ while IFS= read -rn1 c; do
+    #do something with $c
+done &lt;&lt;&lt; “$str”
+</pre>
+
+<p>
+这段脚本中用到了-n1参数，它可以让read命令一次读取一个字符，对应的，我们可以使用-n2参数每次读取2个字符。
+</p>
+
+<h3>
+9 用“bar”替换字符串中的“foo”
+</h3>
+<pre>
+$ echo ${str/foo/bar}
+</pre>
+
+<p>
+这个命令用到了参数展开，它的形式是${var/find/replace}。它会在字符串var中查找find字符串，并将找到的find字符串替换为replace。很方便！
+</p>
+
+<p>
+如果你想将字符串中的所有“foo”替换为“bar”，使用${var//find/replace}：
+</p>
+
+<pre>
+$ echo ${str//foo/bar}
+</pre>
+
+<h3>
+10 判断字符串是否匹配某个模式
+</h3>
+
+<pre>
+$ if [[ $file = *.zip ]] ; then
+    # do something
+  fi
+</pre>
+
+<p>
+这段脚本首先判断$file所表示的字符串是否匹配*.zip。这是一个很简单的glob模式匹配，你还可以使用元字符* ？ […] 进行匹配。*可以匹配任意字符，？匹配一个字符，[…]匹配…表示的所有字符，或者一类字符。
+</p>
+
+<p>
+下面这个示例会判断answer是否是Y或者y字符：
+</p>
+
+<pre>
+$ if [[ $answer = [Yy]* ]]; then
+   # do something
+fi
+</pre>
+
+<h3>
+11 判断字符串是否匹配某个正则表达式
+</h3>
+
+<pre>
+$ if [[ $str =~ [0-9]+\.[0-9]+ ]]; then
+   # do something
+fi
+</pre>
+
+<p>
+这段脚本中if语句会判断字符串$str是否匹配正则表达式[0-9]+\.[0-9]+，这个正则表达式会匹配一个数字后面跟一个点再跟一个数组组成的字符。可以使用命令man 3 regex查看正则表达式的格式。
+</p>
+ 
+
+<h3>
+12. 获取字符串的长度
+</h3>
+<pre>
+$ echo ${#str}
+</pre>
+
+<p>
+这里使用了参数展开，${#str}会返回$str表示的字符串的长度，看起来很简单，对吧？
+</p>
+
+<h3>
+13. 从字符串中提取子字符串
+</h3>
+<pre>
+$ str=“hello world”
+$ echo ${str:6}
+</pre>
+
+<p>
+上面的命令会从字符串hello world中提取world。它使用了字符串展开。通常子字符串展开的写法是${var:offset:length}，它会从var所表示的字符串的第offset个字符开始提取长度为length的子字符串。上面的示例中我们忽略了length，而是从offset 6开始提取后面的所有字符。
+</p>
+
+<p>
+另外一个示例：
+</p>
+
+<pre>
+$ echo ${str:7:2}
+</pre>
+
+<p>
+输出为：
+</p>
+
+<pre>
+or
+</pre>
+
+<h3>
+14. 将字符串转换为大写
+</h3>
+
+<pre>
+$ declare -u var
+$ var=“foo bar”
+</pre>
+
+<p>
+bash中的declare命令可以申明变量或者给变量赋予一些属性。在上面的示例中我们给变量var赋予了属性-u，这个属性会赋给var的值转换为大写。如果你现在使用echo输出$var，它将输出大写字母：
+</p>
+
+<pre>
+$ echo $var
+FOO BAR
+</pre>
+
+<p>
+注意-u参数在第4版的bash中才被引入。第4版还有另外一个新特性可以实现大写转换，它就是${var^^}参数扩展，它会将$var的字符串转换为大写。
+</p>
+
+<pre>
+$ str=“zoo raw”
+$ echo ${str^^}
+</pre>
+
+<p>
+输出为：
+</p>
+<pre>
+ZOO RAW
+</pre>
+
+<h3>
+15 将字符串转换为小写
+</h3>
+<pre>
+$ declare -l var
+$ var=“FOO BAR”
+</pre>
+
+<p>
+跟上一个示例一样，参数-l是declare命令赋予变量var的属性，它会将赋给var的值转换为小写：
+</p>
+
+<pre>
+$ echo $var
+foo bar
+</pre>
+
+<p>
+-l参数也自在4版bash中有效。
+</p>
+
+<p>
+另外一种小写转换的方式是使用${var,,}参数展开：
+</p>
+
+<pre>
+$ str=“ZOO RAW”
+$ echo ${str,,}
+</pre>
+
+<p>
+输出为：
+</p>
+
+<pre>
+zoo raw
+</pre>
+
+
+
+
+    </section>
+
+    <footer>
+        <section class="followupActions">
+            如果你喜欢这篇文章，你可以在下面发表评论，你可能也会有兴趣<a href="/">浏览其他文章</a> 。
+        </section>
+    </footer>
+
+
+
+    <div id="SOHUCS" sid="3dc1ebe0-73a3-11e4-9395-b390fbfe6d55"></div>
+</section>
+
+
+
+
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script src='/js/highlight.min.js'></script>
+<script>
+(function($){
+ $(function(){
+     hljs.configure({
+        tabReplace: '    '
+    });
+     $('.post pre').each(function(i,block){
+         hljs.highlightBlock(block);
+     });
+     //hljs.initHighlightingOnLoad();
+ });
+
+ }(jQuery));
+</script>
+<!--高速版，加载速度快，使用前需测试页面的兼容性-->
+<script>
+  (function(){
+    var appid = 'cyruMmQl9',
+    conf = 'prod_56838f5e72885e1172b2849c0d1c4b13';
+    var doc = document,
+    s = doc.createElement('script'),
+    h = doc.getElementsByTagName('head')[0] || doc.head || doc.documentElement;
+    s.type = 'text/javascript';
+    s.charset = 'utf-8';
+    s.src =  'http://assets.changyan.sohu.com/upload/changyan.js?conf='+ conf +'&appid=' + appid;
+    h.insertBefore(s,h.firstChild);
+    window.SCS_NO_IFRAME = true;
+  })()
+</script>                
+</body>
+</html>
+
+

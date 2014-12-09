@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>fast.js和它对应的javascript内置函数 - GongYong</title>
+    <meta charset="utf-8">
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link media="all" href="/css/style.css" type="text/css" rel="stylesheet" />
+
+<link href="/css/hljs.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+<header>
+    <a href='/'><strong>Gong Yong</strong></a>的Blog
+    <!--
+    我的 <a href="https://github.com/gywbd">GitHub</a>
+    ，
+    以及 <a href="/aboutMe.html">个人简介</a>。
+    -->
+</header>
+
+
+
+<section class="post">
+
+    <header>
+        <h2 class="title">fast.js和它对应的javascript内置函数</h2>
+        <time datetime="2014-09-22" pubdate="">
+            2014-09-22
+        </time>
+    </header>
+
+    <section>
+        <p>
+<a target="blank" href="https://github.com/codemix/fast.js">fast.js</a>是一个javascript函数库，它重写了一些javascript的内置函数，像forEach()、map()、reduce()、apply()之类的函数，还提供了一些常用的函数，例如clone()。fast.js是一个较新的项目，当前还处于开发阶段，暂时只能用于nodejs的环境中，不太适合在浏览器环境中上使用。
+</p>
+
+<p>
+fast.js所提供的函数的性能比起对应的内置函数的性能要好很多，你可以看看它的<a target="blank" href='https://github.com/codemix/fast.js#example-benchmark-output'>benchmark</a>。它也比提供类似功能的其他函数库(例如underscore)的性能要好。这篇文章主要是介绍怎么使用这些函数以及它对应的内置函数。
+</p>
+
+<ul class='indexes'>
+<li> <a href='#apply'>apply</a> </li>
+<li> <a href='#assign'>assign</a> </li>
+<li> <a href='#bind'>bind</a> </li>
+<li> <a href='#clone'>clone</a> </li>
+<li> <a href='#concat'>concat</a> </li>
+<li> <a href='#every'>every</a> </li>
+<li> <a href='#filter'>filter</a> </li>
+<li> <a href='#forEach'>forEach</a> </li>
+<li> <a href='#indexOf'>indexOf</a> </li>
+<li> <a href='#lastIndexOf'>lastIndexOf</a> </li>
+<li> <a href='#map'>map</a> </li>
+<li> <a href='#partial'>partial</a> </li>
+<li> <a href='#reduce'>reduce</a> </li>
+<li> <a href='#reduceRight'>reduceRight</a> </li>
+<li> <a href='#some'>some</a> </li>
+<li> <a href='#try'>try</a> </li>
+</ul>
+
+<h3><a class="sub-title" name="apply">apply</a></h3>
+<pre>
+var fast = require('fast.js');
+function fn(a,b) {
+    console.log(a+b);
+}
+
+//builtin way
+fn.apply(null,[1,2]);
+
+//fast.js way
+fast.apply(fn,null,[1,2]);
+</pre>
+<p>
+apply()的内置函数是<a target="blank" href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply'>Function.prototype.apply()</a>，它是函数对象的原型函数。
+</p>
+<p>
+原生的apply()会被一个函数对象调用，它接受两个参数，第一个参数可以用于改变函数执行时的this对象，用于改变函数执行的上下文；第二个参数是要传递给函数的参数，类型是一个数组，数组中每个元素代表一个参数。
+</p>
+<p>
+fast.apply()接受三个参数：第一个是函数对象，第二个是改变函数this对象的参数，第三个才是传递给函数的参数，类型也是数组。
+</p>
+<h3><a class="sub-title" name="assign">assign</a></h3>
+<pre>
+var fast = require('fast.js');
+var obj1 = {a : Math.random()};
+var obj2 = {b:Math.random(),c:Math.random()};
+
+//builtin way
+Object.assign(obj1,obj2);
+
+//fast.js way
+fast.assign(obj1,obj2);
+</pre>
+<p>
+assing()的内置函数是<a target="blank" href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign'>Object.assign()</a>函数，这个是ECMAScript 6中才支持的函数，由于ES6还没有正式发布，所以目前还只是一个实验性的产品。
+</p>
+<p>
+assing()可以对对象进行合并。它可以包含任意多个参数，第一个参数是目标对象(target object)，其他的参数是源对象(source object)，它会将源对象的数据拷贝到目标对象中，最终返回目标对象。
+</p>
+<p>
+原生的assign()函数的语法格式为：
+</p>
+<pre>
+Object.assign(target,...sources)
+</pre>
+<p>
+fast.assign()的用法跟原生的assign()的方法一致。
+</p>
+<p>
+这个函数的使用有一些规则：
+</p>
+<ol >
+    <li><p>
+
+这个函数只会拷贝源对象中的可枚举(enumerable)属性和自有属性（own properties，非原型链上的属性）
+
+</p></li>
+    <li><p>
+
+它会在源对象上使用[[Get]]，而在目标对象上使用[[Put]]，所以它会调用getters和setters（请参见<a target="blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty">Object.defineProperty()</a>函数）。因此这个函数采用了赋值的方式，而不是简单的复制和定义一个新属性。
+
+</p></li>
+    <li><p>
+
+String类型和<a target="blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol">Symbol</a>类型的属性都是直接复制。
+
+</p></li>
+    <li><p>
+如果在赋值过程中发生错误，例如某个属性不可写，那么调用assign时就会产生TypeError错误，不过赋值还是会继续，错误会在赋值结束后抛出。
+</p></li>
+    <li><p>
+如果源对象的属性值为undefined或者null，Object.assign不会抛出任何错误。
+</p></li>
+</ol>
+<h3><a class="sub-title" name="bind">bind</a></h3>
+<pre>
+var fast = require('fast.js');
+function fn(a,b) {
+    return a+b;
+}
+
+//builtin way
+fn.bind(this,1,2);
+
+//fast.js way
+fast.bind(fn,this,1,2);
+</pre>
+<p>
+bind()的内置函数是<a target="blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind">Function.prototype.bind()</a>函数，跟apply()一样，它也是函数对象的原型函数，而且它的功能跟apply()函数也有点类似。
+</p>
+<p>
+apply()会立即执行调用它的函数，而bind()会根据调用它的函数创建一个新函数，留作以后执行。
+</p>
+<p>
+bind()函数接受任意多个参数。第一个参数是this对象，跟apply()一样，可以改变函数执行的上下文；其他的参数将是新函数的参数，跟apply()不同的是，它用的是可变参数列表来传递参数，而不是数组。
+</p>
+<p>
+下面是一个使用fast.bind()的示例：
+</p>
+
+<pre>
+var fast = require('fast.js');
+
+this.x = 9; 
+var module = {
+  x: 81,
+  getX: function() { return this.x; }
+};
+
+module.getX(); // 81
+
+var getX = module.getX;
+getX(); // 9, because in this case, "this" refers to the global object
+
+// Create a new function with 'this' bound to module
+var boundGetX = fast.bind(getX,module);
+boundGetX(); // 81
+</pre>
+<h3><a class="sub-title" name="clone">clone</a></h3>
+<pre>
+var fast = require('fast.js');
+
+var inputObject = {
+    a : 1,
+    b : 2,
+    c : 3,
+    d : 4,
+    e : 5,
+    f : 6
+};
+
+var inputArray = [1,2,3,4,5,6];
+
+//fast.js way
+fast.clone(inputObject);
+fast.clone(inputArray);
+</pre>
+<p>
+javascript中没有内置的clone()函数。clone()函数可以克隆对（数组），返回一个新的对象（数组）。新的对象的属性和它的值跟传入的对象一模一样（新数组的元素跟传入的数组也是一模一样），但它们是不同的对象（数组）。
+</p>
+<h3><a class="sub-title" name="concat">concat</a></h3>
+<pre>
+var input = [1,2,3,4,5,6,7,8,9];
+
+//builtin way
+input.concat(11,12,[13]);
+
+//fast.js way
+fast.concat(input,11,12,[13]);
+</pre>
+<p>
+concat()的内置函数是<a target="blank" href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat'>Array.prototype.concat()</a>函数，它是数组的原型函数。
+</p>
+<p>原生的concat()函数由数组调用，它接受任意多个参数，这些参数可以是数组或者值。它会返回一个新的数组，新数组会先将调用这个函数的数组的元素加入到新的数组中，然后处理传入的参数，如果传入的是值，则直接加入到新数组中；如果是数组，则会将数组中的元素加入到新数组中，这相当于执行数组连接操作。
+</p>
+<p>
+原生concat()函数对数组的处理规则为：
+</p>
+<ol >
+    <li><p>
+concat()会返回一个新数组，新数组跟调用它的数组没有任何关系。对新数组进行操作不会影响原数组，或者传入的作为参数的数组
+</p></li>
+    <li><p>
+如果数组中包括对象，concat()会将对象的引用拷贝到新数组中，所以新数组中这个引用跟老数组中的引用指向同一个对象。
+</p></li>
+    <li><p>
+对于String或者Number类型，直接拷贝值
+</p></li>
+</ol>
+<p>
+fast.concat()的第一个参数为原生的concat()中调用它的数组，其他的跟原生的concat()没有任何差别。
+</p>
+<h3><a class="sub-title" name="every">every</a></h3>
+<pre>
+var fast = require('fast.js');
+
+var input = [1,2,3];
+
+function fn(i) {
+    return i &lt; 4;
+}
+
+//builtin way
+input.every(fn);
+
+//fast.js way
+fast.every(input,fn);
+
+</pre>
+<p>
+every()的内置函数是<a target="blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every">Array.prototype.every()</a>，它是数组的原型函数。
+</p>
+<p>
+原生every()函数会被数组对象调用，every()会遍历数组的各个元素，并将每个元素作为参数传递给callback，callback是every()的第一个参数。如果callback返回false，则遍历会立即终止，相应的every()也会返回false。如果每次调用callback都返回true，最终遍历完后every()会返回true。这个函数可以判断数组中的每个元素是否都满足某种条件。
+</p>
+<p>
+原生every()函数的语法是：
+</p>
+<pre>
+arr.every(callback[, thisArg])
+</pre>
+<p>
+第一个参数callback可以接受3个参数：
+</p>
+<ol class="article-list">
+    <li><p>
+<b>currentValue</b>：当前元素
+</p></li>
+    <li><p>
+<b>index</b>：当前元素索引
+</p></li>
+    <li><p>
+<b>array</b>：调用every()的数组
+</p></li>
+</ol>
+<p>
+every()还可以接受第二个参数，这个跟apply()和bind()一样，用于改变callback函数的this对象。
+</p>
+
+<p>
+fast.every()的第一个参数为要处理的数组，它跟原生的every()有一些细小的差别，<a href='#diff'>对此最后一节会更详细的说明。</a>
+</p>
+<h3><a class="sub-title" name="filter">filter</a></h3>
+<pre>
+var fast = require('fast.js');
+
+function fn(item){
+    return (item + Math.random()) % 2;
+}
+
+var input = [1,2,3];
+
+//builtin way
+input.filter(fn);
+
+//fast.js way
+fast.filter(input,fn);
+</pre>
+<p>
+filter()的内置函数是<a target="blank" href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter'>Array.prototype.filter()</a>函数，它也是数组对象的原型函数。
+</p>
+<p>
+filter()跟every()有些类似，every()函数可以判断数组中的元素是否都满足某个条件，而filter函数则是会将不满足条件的元素都过滤掉，最后返回一个新的数组。
+</p>
+<p>
+原生filter()函数的语法为：
+</p>
+<pre>
+arr.filter(callback[, thisArg])
+</pre>
+<p>
+它的参数跟every()的参数一样，这里就不赘述了。
+</p>
+<p>
+fast.filter()的第一个参数为要处理的数组，它跟原生的filter()有一些细小的差别，<a href='#diff'>对此最后一节会更详细的说明。</a>
+</p>
+<h3><a class="sub-title" name="forEach">forEach</a></h3>
+<pre>
+var fast = require('fast.js');
+function fn(item) {
+    console.log(item);
+}
+
+var input = [1,2,3];
+
+//builtin way
+input.forEach(fn);
+
+//fast.js way
+fast.forEach(fn);
+</pre>
+<p>
+forEach()的内置函数是<a target="blank" href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach'>Array.prototype.forEach()</a>，这个函数会遍历数组中的所有元素，并将每个元素作为callback的参数执行callback。这个可能是用得最多的数组函数，至少我是这样的。
+</p>
+<p>
+原生forEach()函数的语法为：
+</p>
+<pre>
+arr.forEach(callback[, thisArg])
+</pre>
+<p>
+它的参数跟上面提到的every()和filter()的参数一样。实际上这篇文章中提到的几个数组函数(every、filter、forEach、map和some)都是一类函数，它们的用法和行为都有一些类似之处，对于这点各自自己去感受吧。
+</p>
+<p>
+关于forEach()函数还有两点需要注意：
+</p>
+<ul>
+    <li><p>
+当数组对象为null或者undefined的时候，如果使用这个函数的时候会报错，所以在使用的时候最好先判断数组是否为null或者undefined。
+</p></li>
+	<li><p>
+forEach函数对数组的迭代是不可终止的，只有Array.every()和Array.some()这两个函数才可以通过返回值终止迭代。
+</p></li>
+</ul>
+<h3><a class="sub-title" name="indexOf">indexOf</a></h3>
+<pre>
+var fast = require('fast.js');
+
+var input = [1,2,3,4,5,6];
+
+//builtin way
+input.indexOf(4);
+
+//fast way
+fast.indexOf(input,4);
+</pre>
+<p>
+indexOf的内置函数是<a target="blank" href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf'>Array.prototype.indexOf()</a>，它是数组对象的原型函数。它用于查找某个元素在数组中的位置，如果未找到则返回-1。
+</p>
+<p>
+内置函数的语法为：
+</p>
+<pre>
+arr.indexOf(searchElement[, fromIndex = 0])
+</pre>
+<p>
+第二个参数表示查找的起始位置，默认为0，也就是从头开始查找。对于这个参数有几点需要注意：</p>
+
+<ul>
+<li><p>
+如果这个参数比数组的长度要大，则直接返回-1，查找不会进行
+</p></li>
+<li><p>
+如果这个参数是负数，则开始查找的位置为这个参数的值加上数组的总长度的结果，查找还是从前往后进行。如果相加后的结果仍然为负数，则从第0个元素开始查找。
+</p></li>
+</ul>
+<h3><a class="sub-title" name="lastIndexOf">lastIndexOf</a></h3>
+<pre>
+var fast = require('fast.js');
+
+var input = [1,2,3,4];
+
+//builtin way
+input.lastIndexOf(1);
+
+//fast.js way
+fast.lastIndexOf(input,1);
+
+</pre>
+
+<p>
+lastIndexOf()的内置函数是<a target="blank" href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/lastIndexOf'>Array.prototype.lastIndexOf()</a>，它跟indexOf()是一对，只不过indexOf()是从前往后在数组中查找，而lastIndexOf()则是从后往前查找，它们都返回第一个找到元素的位置，找不到的时候都返回-1。
+</p>
+<p>
+内置函数的语法为：
+</p>
+<pre>
+arr.lastIndexOf(searchElement[, fromIndex = arr.length])
+</pre>
+<p>
+lastInfoOf()的参数的使用规则为：
+</p>
+<ul>
+<li><p>
+如果这个参数比数组的长度更大，则查找会从最后一个元素开始，整个数组的所有元素都会查找。
+</p></li>
+<li><p>
+如果这个参数是负数，那么将这个参数的值与数组长度相加得到的结果就是查找的起始位置。如果这个结果依旧为负数，那么将返回-1，不会进行查找操作。
+</p></li>
+</ul>
+
+<p>
+注意：lastIndexOf()和前面的indexOf()在查找的元素的时候都采用严格比较（strict equality，也就是三等号'==='操作符进行比较的）
+</p>
+
+<h3><a class="sub-title" name="map">map</a></h3>
+<pre>
+var fast = require('fast.js');
+var input = [1,2,3,4];
+
+function fn(item) {
+	return item * item + Math.random();
+}
+
+//builtin way
+var input2 = input.map(fn);
+
+//fast.js way
+var input3 = fast.map(input,fn);
+</pre>
+
+
+<p>
+map()的内置函数是<a target="blank" href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map'>Array.prototype.map()</a>。
+</p>
+
+<p>
+map()的用法跟前面介绍的every()、filter()和forEach()一样，都会对数组的元素进行遍历。map跟它们不同的是，它会返回一个新数组，这个数组中的元素就是每次调用callback后返回的值。
+</p>
+
+<p>
+我们来看一个fast.map()的示例：
+</p>
+<pre>
+var fast = require('fast.js');
+
+var numbers = [1,4,9];
+var roots = fast.map(numbers,Math.sqrt);
+//root is now [1,2,3], numbers is still [1,4,9]
+</pre>
+
+<h3><a class="sub-title" name="partial">partial</a></h3>
+<pre>
+var fast = require('fast.js'); 
+
+var input = function(a,b,c){
+	return a + b + c * Math.random();
+};
+
+//builtin way
+var fn1 = input.bind(this,1,2);
+fn1(3);
+
+//fast way
+var fn2 = fast.partial(input,1,2);
+return fn2(3);
+
+</pre>
+
+<p>
+javascript中采用内置的bind来实现partial的功能，我们先来看一个示例：
+</p>
+
+<pre>
+
+function list() {
+  return Array.prototype.slice.call(arguments);
+}
+
+var list1 = list(1, 2, 3); // [1, 2, 3]
+
+// Create a function with a preset leading argument
+var leadingThirtysevenList = list.bind(undefined, 37);
+
+var list2 = leadingThirtysevenList(); // [37]
+var list3 = leadingThirtysevenList(1, 2, 3); // [37, 1, 2, 3]
+</pre>
+
+<p>
+bind()函数创建了一个新函数，在创建函数时就传入了部分参数。调用新函数时，之前传入的参数依旧存在。
+</p>
+
+<p>
+fast.partial()就是用于创建这种部分函数的。它跟用内置的bind()创建的部分函数有个较大的差别，fast.partial()没有改变this对象的参数，这也是它跟fast.bind()的不同点。fast.partial()和fast.bind()跟内置的bind()函数的其他差别请参加<a href='#diff'>最后一节</a>。
+</p>
+
+<h3><a class="sub-title" name="reduce">reduce</a></h3>
+<pre>
+var fast = require('fast.js');
+
+var input = [1,2,3];
+
+function fn(last,item) {
+	return last * item + Math.random();
+}
+
+//builtin way
+input.reduce(fn,0);
+
+//fast.js way
+fast.reduce(input,fn,0);
+
+</pre>
+<p>
+reduce()的内置函数是<a target="blank" href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce'>Array.prototype.reduce()</a>。
+</p>
+<p>
+reduce()会对数组元素进行遍历并调用callback，最终返回一个单个的值（注意不是数组）。我们先看看内置reduce()的语法，然后再来分析它的用法：
+</p>
+<pre>
+arr.reduce(callback[, initialValue])
+</pre>
+<p>
+第一个参数callback可以接受4个参数：
+</p>
+<ol>
+	<li><p>
+<b>previousValue</b>：在遍历数组过程中前一次调用callback函数返回的结果，或者是initialValue（下面详细说明）。
+</p></li>
+	<li><p>
+<b>currentValue</b>：当前迭代的值。
+</p></li>
+	<li><p>
+<b>index</b>：当前迭代的索引。
+</p></li>
+	<li><p>
+<b>array</b>：调用reduce()的数组对象。
+</p></li>
+</ol>
+<p>
+第二个参数initialValue，这是一个可选参数。如果提供了，那么它将作为第一次调用callback时的第一个参数。
+</p>
+<p>
+使用这个函数时有以下几点需要注意：
+</p>
+<ol>
+	<li><p>
+previousValue、currentValue、initialValue关系：</p>
+		<ul>
+		<li><p>
+
+			如果在调用reduce()时没有提供initialValue，那么第一次调用callback时previousValue将是数组的第一个元素，currentValue是数组的第二个元素。
+		
+</p></li>
+		<li><p>
+
+		如果提供了initialValue，那么第一次调用callback时previousValue是initialValue的值，而currentValue是第一个数组元素。
+		
+</p></li>
+		</ul>
+</li>
+<li><p>
+
+如果数组为空，并且没有提供initialValue参数，那么会抛出TypeError。
+
+</p></li>
+<li><p>
+
+如果数组中只有一个元素，并且没有提供initialValue参数，仅有的一个元素的值会被返回，而不会调用callback。
+
+</p></li>
+<li><p>
+如果数组为空，但是提供了initialValue参数，reduce会返回initialValue的值，并且不会调用callback。
+</p></li>
+
+</ol>
+
+<p>
+最后再看一个使用fast.js的reduce函数的示例：
+</p>
+<pre>
+var fast = require('fast.js');
+var result = fast.reduce([0,1,2,3,4],function(previousValue, currentValue, index, array) {
+  return previousValue + currentValue;
+}, 10);
+
+//the result would be 20
+console.log(result);
+</pre>
+<p>
+关于fast.reduce()跟原生reduce()的差别请参加<a href='diff'>最后一节</a>。
+</p>
+<h3><a class="sub-title" name="reduceRight">reduceRight</a></h3>
+<pre>
+var fast = require('fast.js');
+
+var input = [1,2,3,4,5,6,7,8,9,10];
+
+function fn(last,item) {
+	return last*item + Math.random();
+}
+
+//builtin way
+input.reduceRight(fn,0);
+
+//fast.js way
+fast.reduceRight(input,fn,0);
+</pre>
+<p>
+reduceRight()的内置函数为<a target="blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight">Array.prototype.reduceRight()</a>。
+</p>
+<p>
+这个函数跟reduce()的唯一不同是：reduce()是从左往右遍历数组，也就是从第0个元素遍历到最后一个，而reduceRight()则是从右往左遍历数组，从最后一个元素遍历到第0个。
+</p>
+<h3><a class="sub-title" name="some">some</a></h3>
+<pre>
+var fast = require('fast.js');
+
+var input = [1,2,3,4,5,6,7,8,9,10];
+
+function fn(item) {
+	return item === 10;
+}
+
+//builtin way
+input.some(fn);
+
+//fast.js way
+fast.some(input,fn);
+
+</pre>
+<p>
+some()的内置函数为<a target="blank" href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some'>Array.prototype.some()</a>，它是数组对象的原型函数。
+</p>
+<p>
+some()用于判断数组中是否有满足某个条件的元素，它跟every()有点类似，只不过every()用于判断数组中所有元素是否都满足某个条件。我们来看看内置some()的语法结构：
+</p>
+<pre>
+arr.some(callback[, thisArg])
+</pre>
+<p>
+它跟every()、filter()、forEach()的语法相同，参数的使用方法也相同。
+</p>
+<p>
+fast.some()的示例：
+</p>
+<pre>
+var fast = require('fast.js');
+
+function isBigEnough(element, index, array) {
+	return element &gt;= 10;
+}
+
+var passed = fast.some([2, 5, 8, 1, 4],isBigEnough);
+//passed is false
+
+var passed = fast.some([12, 5, 8, 1, 4],isBigEnough);
+//passed is true 
+
+</pre>
+<h3><a class="sub-title" name="try">try</a></h3>
+<pre>
+var fast = require('fast.js');
+
+function factorial(op) {
+	var z = op + 1;
+	var p = [1.000000000190015, 76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 1.208650973866179E-3, -5.395239384953E-6];
+
+	var d1 = Math.sqrt(2 * Math.PI) / z;
+	var d2 = p[0];
+
+	for (var i = 1; i &lt;= 6; ++i) {
+		d2 += p[i] / (z + i);
+	}
+
+	var d3 = Math.pow((z + 5.5), (z + 0.5));
+	var d4 = Math.exp(-(z + 5.5));
+
+	d = d1 * d2 * d3 * d4;
+
+	return d;
+}
+
+function doSomeWork() {
+	var d = 0;
+	d += factorial(10 * Math.random());
+	d += factorial(2 * Math.random());
+	return d;
+}
+
+//builtin way
+try {
+	doSomeWork();
+} catch (e) {
+	console.log(e);
+}
+
+//fast.js way
+fast.try(doSomeWork);
+
+</pre>
+
+<p>
+相信大家对try...catch都有一定了解，<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch">这里</a>是内置try...catch的文档。fast.js中的try跟内置的try的不同之处是fast.js中的try是一个函数，并且不需要使用catch。
+</p>
+
+<h3><a class="sub-title" name="diff">不同之处</a></h3>
+<p>
+到这里fast.js中的所有常用的函数都介绍完了，这些函数基本上都有它对应的内置函数。它们的用法也是基本上完全一致，所以每个函数都重点介绍了内置函数的用法，因为这些内置的函数的文档更详细，而且它们比fast.js中的函数更成熟。
+</p>
+<p>
+尽管如此，fast.js中的函数和它对应的内置函数的也存在一些细节上有些差别：</p>
+
+<ul>
+<li><p>
+
+对于数组对象上的原型函数，像map、forEach、every、some、filter这几个函数的语法基本相同，它们只会处理某个索引已赋值的元素，如果某个索引没有赋值，或者是已被删除，则它们不会被处理。
+</p>
+<p>
+不过fast.js则会处理这些元素，fast.js会将undefined作为这个索引的值传给callback作为参数。
+
+</p></li>
+<li><p>
+使用fast.bind()和fast.partial()创建的函数跟调用原生的函数Function.prototype.bind()所创建的函数并不完全相同：
+</p>
+<ul>
+<li><p>
+fast.partial()创建的函数没有不可变的“毒药”方法和参数属性，它们在调用get、set或者被删除的时候会抛出TypeError错误。
+</p></li>
+<li><p>
+fast.partial()创建的函数有prototype属性，而原生的bind()创建的函数没有prototype属性。
+</p></li>
+<li><p>
+fast.partial()创建的函数的length属性只能为0，这不符合ECMA-262规范，原生函数创建的函数的length属性可能为非零值。
+</p></li>
+</ul>
+
+</li>
+<li>
+<p>
+fast.reduce()函数的跟原生的Array.prototype.reduce()函数有一些较大的差别：
+</p>
+<ul>
+<li><p>
+fast.reduce()中initialValue参数的值为undefined跟不设置initialValue参数的情况相同。这跟原生函数的规定不同，原生函数只判断参数的个数，而不管参数的值。而fast.reduce()会检查initialValue的值是否为undefined，因为undefined有时候会产生一些意外的结果。如果你希望fast.reduce()在这点上跟原生函数一致，你可以把它设置为null。
+</p></li>
+<li><p>
+fast.reduce()支持4个参数，第四个参数是传给callback的this对象，这个原生函数是不支持的。
+</p></li>
+</ul>
+</li>
+</ul>
+
+<p>
+这些差别在现实的环境中很少会带来问题，所以你可以不用担心它们。
+</p>
+
+
+
+    </section>
+
+    <footer>
+        <section class="followupActions">
+            如果你喜欢这篇文章，你可以在下面发表评论，你可能也会有兴趣<a href="/">浏览其他文章</a> 。
+        </section>
+    </footer>
+
+
+
+    <div id="SOHUCS" sid="4a84e1c0-73a8-11e4-ac9e-3db8bb0234c4"></div>
+</section>
+
+
+
+
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script src='/js/highlight.min.js'></script>
+<script>
+(function($){
+ $(function(){
+     hljs.configure({
+        tabReplace: '    '
+    });
+     $('.post pre').each(function(i,block){
+         hljs.highlightBlock(block);
+     });
+     //hljs.initHighlightingOnLoad();
+ });
+
+ }(jQuery));
+</script>
+<!--高速版，加载速度快，使用前需测试页面的兼容性-->
+<script>
+  (function(){
+    var appid = 'cyruMmQl9',
+    conf = 'prod_56838f5e72885e1172b2849c0d1c4b13';
+    var doc = document,
+    s = doc.createElement('script'),
+    h = doc.getElementsByTagName('head')[0] || doc.head || doc.documentElement;
+    s.type = 'text/javascript';
+    s.charset = 'utf-8';
+    s.src =  'http://assets.changyan.sohu.com/upload/changyan.js?conf='+ conf +'&appid=' + appid;
+    h.insertBefore(s,h.firstChild);
+    window.SCS_NO_IFRAME = true;
+  })()
+</script>                
+</body>
+</html>
+
+

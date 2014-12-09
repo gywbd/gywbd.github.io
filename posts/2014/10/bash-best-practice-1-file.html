@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>bash最佳实践1：操作文件 - GongYong</title>
+    <meta charset="utf-8">
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link media="all" href="/css/style.css" type="text/css" rel="stylesheet" />
+
+<link href="/css/hljs.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+<header>
+    <a href='/'><strong>Gong Yong</strong></a>的Blog
+    <!--
+    我的 <a href="https://github.com/gywbd">GitHub</a>
+    ，
+    以及 <a href="/aboutMe.html">个人简介</a>。
+    -->
+</header>
+
+
+
+<section class="post">
+
+    <header>
+        <h2 class="title">bash最佳实践1：操作文件</h2>
+        <time datetime="2014-10-12" pubdate="">
+            2014-10-12
+        </time>
+    </header>
+
+    <section>
+        <blockquote>
+<p>
+这个系列的文章是Peteris Krumins写的One-Liners Explained系列的Bash部分，这个系列讲解了一些bash的最佳实践、通用方法和小技巧，以及怎么高效使用bash的内置命令。
+</p>
+
+<p>
+One-Liner的意思是简短。正如其名，这个系列的内容组织都比较简短，基本上每个用法、操作、技巧、知识点都是通过一行命令作为示例来讲解，我个人很赞赏这种组织内容的方式。
+</p>
+</blockquote>
+
+
+<p>
+这一章是这个系列的第一部分，主要是讲解bash中跟文件相关的一些东西。
+</p>
+
+<h3>
+1 清空一个文件（文件大小变为0）
+</h3>
+
+<pre>$ &gt; file
+</pre>
+
+<p>
+"<code>&gt;</code>"是输出重定向符。输出重定向会打开文件并执行写操作。当文件不存在的时候会创建一个新文件，如果存在的话，则将标准输出的内容重定向到文件中。</p>
+<p>
+上面的命令没有将任何东西重定向到文件中，所以最终文件的内容为空，文件大小为0，这是因为每次使用输出重定向的时候文件被打开的时就会被清空。
+</p>
+
+<p>
+下面的命令会将字符串"<code>string</code>"写入文件，或者创建一个内容为"<code>string</code>"的文件：
+</p>
+
+<pre>$ echo "some string" &gt; file
+</pre>
+
+<h3>
+2 在文件尾部追加内容
+</h3>
+
+<pre>$ echo "foo bar bas" &gt;&gt; file
+</pre>
+
+<p>
+"<code>&gt;&gt;</code>"是另外一种输出重定向符，使用这个重定向符每次打开文件的时候不会清空文件，并且输出追加到文件尾部。如果文件不存在，则会新建一个。</p>
+
+<p>通常新的内容将以一个新的行追加到文件尾部，你可以使用-n选项取消以新行的方式追加，而是直接追加到文件的最后一个字符后面。
+</p>
+
+<h3>
+3 读取文件的第一行并将其赋值给一个变量
+</h3>
+
+<pre>$ read -r line &lt; file
+</pre>
+
+<p>
+这个命令使用了bash的内置命令<code>read</code>，以及输入重定向操作符"<code>&lt;</code>"。
+</p>
+
+<p>
+read命令会从标准输入读取一行，并将其赋值给变量<code>line</code>。-r选项表示read将读取原生内容，所有字符都不会被转义，例如反斜线不会用于转义（只是反斜线）。输入重定向命令"<code>&lt;file</code>"会打开文件并执行读操作，并且会将读取的内容以标准输入的形式提供给<code>read</code>命令。
+</p>
+
+<p>
+<code>read</code>命令会删除特殊变量<code>IFS</code>所表示的字符。<code>IFS</code>是Internal Field Separator（内部字段分隔符）的缩写，它的值为用于分隔单词和行的字符组成的字符串。IFS的默认值为空格符、制表符和换行符组成的字符串。这意味着前导和尾随的空格符和制表符都会被删除。如果你想保留这些字符，你可以将IFS设置为空字符：
+</p>
+
+<pre>$ IFS= read -r line &lt; file
+</pre>
+
+<p>
+只有在这个命令执行过程中IFS值会改变，执行完后会重设为默认值。上面的命令绝对会读取第一行的原生内容，包含所有的前导和尾随的空白符。
+</p>
+
+<p>
+另外一种将文件的一行内容读取到变量中的方法是：
+</p>
+
+<pre>$ line=$(head -1 file)
+</pre>
+
+<p>
+这里用到了命令替换操作符"<code>$(...)</code>"，它会执行"..."所代表的命令，并返回这个命令的输出。</p>
+<p>
+<code>head -1 file</code>会输出文件的第一行，它会被赋值给变量<code>line</code>。"<code>$(...)</code>"跟"<code>`...`</code>"的用法完全一致，所以你也可以这么写：
+</p>
+
+<pre>$ line = `head -1 file`
+</pre>
+
+<p>
+我个人更喜欢"<code>$(...)</code>"这个写法，更简洁，易于嵌套。
+</p>
+
+<h3>
+4 逐行读文件
+</h3>
+<pre>$ while read -r line; do
+      # do something with $line
+    done &lt; file
+</pre>
+
+<p>
+<b>首先请记住上面的脚本是唯一正确的逐行读文件的方法</b>。
+</p>
+<p>
+read命令位于一个while循环的条件语句中，所以只有当read命令返回大于0的状态码（这表示读文件出错或者已到文件尾部）时循环才会终止，如果成功读取一行则会执行循环中的内容。
+</p>
+<p>
+记住read命令会删除前导和尾随的空白符，所以如果你希望保留它们，则需要清空IFS变量的值：
+</p>
+<pre>$ while IFS= read -r line; do
+      # do something with $line
+    done &lt; file
+</pre>
+<p>
+如果你不喜欢在done语句的后面使用"<code>&lt;file</code>"，你可以使用cat命令和管道命令将文件内容传输到while循环。
+</p>
+<pre>$ cat file | while IFS= read -r line; do
+      # do something with $line
+    done &lt; file
+</pre>
+<h3>
+5 随机读取一行并赋值给变量
+</h3>
+
+<pre>$ read -r random_line &lt;  &lt;(shuf file)
+</pre>
+
+<p>
+如果仅仅使用bash的内置命令无法实现这个功能，必须使用外部工具。GNU核心工具包中有一个名为shuf的命令可以满足我们的要求。
+</p>
+
+<p>
+上面的命令中还使用到了进程替换操作符"<code>&lt;(...)</code>"。进程替换操作符会创建一个匿名管道，将这个进程的标准输出连接到这个管道。然后bash会执行这个进程，并且会将整个进程替换为匿名管道的文件名。
+</p>
+
+<p>
+当bash看到"<code>&lt;(shuf file)</code>"时，它会打开一个特殊文件<code>/dev/fd/n</code>，<code>n</code>是一个空闲的文件描述符，当命令执行的时候<code>shuf file</code>的标准输出会连接到<code>/dev/fd/n</code>，"<code>&lt;(shuf file)</code>"会被<code>/dev/fd/n</code>替换，于是上面的命令就变成了：
+</p>
+
+<pre>$ read -r random_line &lt; /dev/fd/n
+</pre>
+
+<p>
+它会读取顺序被打乱后的文件的第一行。
+</p>
+
+<p>
+还有一种方法可以实现这个功能，使用GNU的sort命令。sort命令的-R选项会将文件内容随机打乱输出。
+</p>
+
+<pre>$ read -r random_line &lt; &lt;(sort -R file)
+</pre>
+
+<p>
+还有一种方法：
+</p>
+<pre>$ rand_line=$(sort -R file | head -1)
+</pre>
+
+<p>
+这个命令先使用<code>sort -R</code>随机打乱文件内容，然后使用<code>head -1</code>获取第一行。
+</p>
+
+<h3>
+6 读取文件的前三列（前三个字段）并赋值给三个变量
+</h3>
+<pre>$ while read -r field1 field2 field3 throwaway; do
+    # do something with $field1, $field2, and $field3
+   done &lt; file
+</pre>
+<p>
+当<code>read</code>命令中包含多个变量的时候，它会将读取的一行内容分割为多个字段（<code>IFS</code>中的字符为分隔符），然后将第一个字段赋值给第一个变量，第二个字段赋值给第二个变量...，最后将剩下的所有内容赋值给最后一个变量。这也是为什么上面的脚本有4个变量，第4个变量是<code>throwaway</code>，如果没有这个变量，并且如果这个文件的每行内容不止被分成3列，那么第三个变量就不只是被赋值为第三列的内容，而是第三列之后的所有内容（包括第三列）。
+</p>
+
+<p>
+可以使用"<code>_</code>"代替<code>throwaway</code>变量，这会让代码看起来更简洁些:
+</p>
+<pre>$ while read -r field1 field2 field3 _; do
+    # do something with $field1, $field2, and $field3
+   done &lt; file
+</pre>
+<p>
+如果要读取的文件刚好只有三列，那就可以只用3个变量：
+</p>
+<pre>$ while read -r field1 field2 field3; do
+    # do something with $field1, $field2, and $field3
+   done &lt; file
+</pre>
+<p>
+再来看一个具体的例子。假设我们希望得到一个文件的行数、单词数和字节数，如果使用wc命令它会输出4个字段：
+</p>
+<pre>$ cat file-with-5-lines
+x 1
+x 2
+x 3
+x 4
+x 5
+
+$ wc file-with-5-lines
+ 5 10 20 file-with-5-lines
+</pre>
+<p>
+这个文件有5行，10个单词，20个字符，文件名为file-with-5-linei。我们可以使用<code>read</code>命令将这些值存到变量中：
+</p>
+<pre>$ read lines words chars _ &lt; &lt;(wc file-with-5-lines)
+
+$ echo $lines
+5
+$ echo $words
+10
+$ echo $chars
+20
+</pre>
+<p>
+你也可以使用here-strings来分割字符串并赋值给变量。假设我们有一个字符串 "20 packets in 10 seconds"保存在变量$info中，你想从中提取20和10。在不久之前我会这么做：
+</p>
+<pre>$ packets=$(echo $info | awk '{print $1}’)
+$ time=$(echo $info | awk '{print $4}’)
+</pre>
+
+<p>
+但是现在我的bash知识越来越丰富，我会这么搞：
+</p>
+
+<pre>$ read packets _ _ time _ &lt;&lt;&lt; "$info"
+</pre>
+
+<p>
+"<code>&lt;&lt;&lt;</code>"表示here-string，它允许你直接将变量的内容传给<code>read</code>命令的标准输入。
+</p>
+
+<h3>
+7. 获取文件的大小并将其存到一个变量中
+</h3>
+
+<pre>$ size=$(wc -c &lt; file)
+</pre>
+
+<p>
+上面的命令使用了命令替换符号"<code>$(...)</code>"。这个命令中的<code>wc -c &lt; file </code>会输出文件的大小（以字节为单位），然后将它赋值给变量size。
+</p>
+
+<h3>
+8. 从路径中提取文件名
+</h3>
+<p>
+假设你有一个文件，它的路径为<code>/path/to/file.txt</code>。并且你只想提出文件名<code>file.ext</code>。你会怎么做？
+</p>
+<p>
+使用参数展开机制可以很优雅地解决这个问题：
+</p>
+<pre>$ filename=${path##*/}
+</pre>
+
+<p>
+上面的命令使用了${var##pattern}参数展开。所谓参数展开就是用pattern表示的正则表达式模式从$var变量表示的字符串的开头开始匹配，如果匹配成功，就删除$var字符串中匹配到的最长的字符串，剩下的就是展开的结果。
+</p>
+
+<p>
+上面的命令中的模式是<code>*/</code>，它会从头开始匹配字符串<code>/path/to/file.ext</code>，它是贪婪匹配，会一直匹配到最后一个斜线（上面的命令中会匹配<code>/path/to/</code>），删除$path中的<code>/path/to/</code>，得到的结果就是<code>file.ext</code>。
+</p>
+
+<h3>
+9. 从路径中提取目录
+</h3>
+
+<p>
+这一节的内容跟前一节类似。假设这个路径还是<code>/path/to/file.ext</code>，你想提取这个路径中的目录<code>/path/to</code>。这依旧可以使用参数展开来搞定：
+</p>
+
+<pre>$ dirname=${path%/*}
+</pre>
+
+<p>
+这次使用的是${var%pattern}参数展开（上一个节中的是##，这里是%）。这种参数展开会从$var表示的字符串的结尾开始匹配。如果匹配到，就删除匹配到的最短的匹配结果，剩下的就是展开的结果。
+</p>
+
+<p>
+这里例子中的模式是<code>/*</code>，它会从<code>/path/to/file.ext</code>的尾部开始匹配，它是非贪婪匹配，所以只会匹配到从第一个斜线（从右往左），也就是<code>/file.ext</code>，匹配到的结果会被删除，所以最终输出的就是/path/to，我们想要的文件的目录。
+</p>
+
+<h3>
+10 快速拷贝一个文件
+</h3>
+<p>
+如果你要将一个位于/path/to/file的文件拷贝到/path/to/file_copy，我估计你肯定会这么搞：
+</p>
+
+<pre>$ cp /path/to/file /path/to/file_copy
+</pre>
+
+<p>
+现在我告诉你一种更酷的方法，这种方式使用了括号展开<code>{...}</code>。
+</p>
+
+<pre>$ cp /path/to/file{,_copy}
+</pre>
+
+<p>
+括号展开是一种生成不同字符串的机制。在这个示例中<code>/path/to/file{,_copy}</code>会生成字符串<code>/path/to/file /path/to/file_copy</code>，所以整个命令就变成了<code>cp /path/to/file /path/to/file_copy</code>
+</p>
+
+<p>
+使用同样的方式你也可以快速移动文件，也可以说是重命名文件：
+</p>
+
+<pre>$ mv /path/to/file{,_old}
+</pre>
+
+<p>
+这个会被展开为<code>mv /path/to/file /path/to/file_old</code>。
+</p>
+    </section>
+
+    <footer>
+        <section class="followupActions">
+            如果你喜欢这篇文章，你可以在下面发表评论，你可能也会有兴趣<a href="/">浏览其他文章</a> 。
+        </section>
+    </footer>
+
+
+
+    <div id="SOHUCS" sid="355d0ab0-75e8-11e4-8a0a-73dfd1b51c92"></div>
+</section>
+
+
+
+
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script src='/js/highlight.min.js'></script>
+<script>
+(function($){
+ $(function(){
+     hljs.configure({
+        tabReplace: '    '
+    });
+     $('.post pre').each(function(i,block){
+         hljs.highlightBlock(block);
+     });
+     //hljs.initHighlightingOnLoad();
+ });
+
+ }(jQuery));
+</script>
+<!--高速版，加载速度快，使用前需测试页面的兼容性-->
+<script>
+  (function(){
+    var appid = 'cyruMmQl9',
+    conf = 'prod_56838f5e72885e1172b2849c0d1c4b13';
+    var doc = document,
+    s = doc.createElement('script'),
+    h = doc.getElementsByTagName('head')[0] || doc.head || doc.documentElement;
+    s.type = 'text/javascript';
+    s.charset = 'utf-8';
+    s.src =  'http://assets.changyan.sohu.com/upload/changyan.js?conf='+ conf +'&appid=' + appid;
+    h.insertBefore(s,h.firstChild);
+    window.SCS_NO_IFRAME = true;
+  })()
+</script>                
+</body>
+</html>
+
+

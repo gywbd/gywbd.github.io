@@ -1,0 +1,343 @@
+
+body{
+    margin: 0 auto;
+    font-family: Georgia, Palatino, serif;
+    color: #444444;
+    line-height: 1;
+    max-width: 780px;
+    margin : 0 auto;
+}
+h1, h2, h3, h4 {
+    color: #111111;
+    font-weight: 400;
+}
+h1, h2, h3, h4, h5, p {
+    margin-bottom: 24px;
+    padding: 0;
+}
+h1 {
+    font-size: 48px;
+}
+h2 {
+    font-size: 36px;
+    /* The bottom margin is small. It's designed to be used with gray meta text
+     * below a post title. */
+    margin: 10px 0px ;
+}
+h3 {
+    font-size: 24px;
+}
+h4 {
+    font-size: 21px;
+}
+h5 {
+    font-size: 18px;
+}
+/*
+a {
+    color: #0099ff;
+    margin: 0;
+    padding: 0;
+    vertical-align: baseline;
+}
+a:hover {
+    text-decoration: none;
+    color: #ff6600;
+}
+
+a:visited {
+    color: purple;
+}
+*/
+ul, ol {
+    /*padding: 0;*/
+    margin: 0;
+}
+li {
+    line-height: 24px;
+}
+li ul, li ul {
+    margin-left: 24px;
+}
+p, ul, ol {
+    font-size: 16px;
+    line-height: 24px;
+    /*max-width: 700px;*/
+}
+pre {
+	padding : 15px 10px !important;  
+    /*max-width: 700px;*/
+    white-space: pre-wrap;
+    font-size:14px;
+    line-height:22px;
+	border-left:6px solid #558abb;
+	background : url(/images/blueprint-dark.png) top center #fafbfc
+}
+
+pre p {
+    white-space: pre-wrap;
+    font-size:14px;
+    line-height:22px;
+
+}
+code {
+    font-family: Consolas, Monaco, Andale Mono, monospace;
+    line-height: 1.5;
+    font-size: 13px;
+}
+aside {
+    display: block;
+    float: right;
+    width: 390px;
+}
+blockquote {
+    border-left:.5em solid #eee;
+    padding: 0 2em;
+    margin-left:0;
+    /*max-width: 700px;;*/
+}
+blockquote  cite {
+    font-size:14px;
+    line-height:20px;
+    color:#bfbfbf;
+}
+blockquote cite:before {
+    content: '\2014 \00A0';
+}
+
+blockquote p {  
+    color: #666;
+    /*max-width: 460px;*/
+	/*	   max-width:700px;*/
+}
+
+
+/* Code below this line is copyright Twitter Inc. */
+
+button,
+input,
+select,
+textarea {
+  font-size: 100%;
+  margin: 0;
+  vertical-align: baseline;
+  *vertical-align: middle;
+}
+button, input {
+  line-height: normal;
+  *overflow: visible;
+}
+button::-moz-focus-inner, input::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+button,
+input[type="button"],
+input[type="reset"],
+input[type="submit"] {
+  cursor: pointer;
+  -webkit-appearance: button;
+}
+input[type=checkbox], input[type=radio] {
+  cursor: pointer;
+}
+/* override default chrome & firefox settings */
+input:not([type="image"]), textarea {
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+input[type="search"] {
+  -webkit-appearance: textfield;
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+}
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+label,
+input,
+select,
+textarea {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: normal;
+  line-height: normal;
+  margin-bottom: 18px;
+}
+input[type=checkbox], input[type=radio] {
+  cursor: pointer;
+  margin-bottom: 0;
+}
+input[type=text],
+input[type=password],
+textarea,
+select {
+  display: inline-block;
+  width: 210px;
+  padding: 4px;
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 18px;
+  height: 18px;
+  color: #808080;
+  border: 1px solid #ccc;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+}
+select, input[type=file] {
+  height: 27px;
+  line-height: 27px;
+}
+textarea {
+  height: auto;
+}
+
+/* grey out placeholders */
+:-moz-placeholder {
+  color: #bfbfbf;
+}
+::-webkit-input-placeholder {
+  color: #bfbfbf;
+}
+
+input[type=text],
+input[type=password],
+select,
+textarea {
+  -webkit-transition: border linear 0.2s, box-shadow linear 0.2s;
+  -moz-transition: border linear 0.2s, box-shadow linear 0.2s;
+  transition: border linear 0.2s, box-shadow linear 0.2s;
+  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+input[type=text]:focus, input[type=password]:focus, textarea:focus {
+  outline: none;
+  border-color: rgba(82, 168, 236, 0.8);
+  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px rgba(82, 168, 236, 0.6);
+  -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px rgba(82, 168, 236, 0.6);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+a.sub-title {
+    color:#000;
+}
+
+ul.article-indexes {
+    list-style:none;
+}
+
+ul.article-indexes li a {
+    text-decoration:none;
+}
+
+table.table-indexes a{
+    text-decoration:none;
+    color: #333
+}
+
+ul.article-list,ol.article-list {
+    margin-left:40px;
+}
+
+
+ul.article-list li,ol.article-list li{
+    margin-bottom:5px;
+}
+
+
+ul.index-post-list {
+    margin-left:20px;
+	padding:0px;
+}
+
+ul.index-post-list li a {
+    color:#000;
+    text-decoration:none;
+    font-size:18px;
+}
+
+ul.index-post-list li a:hover {
+    color:#000;
+    text-decoration:underline;
+}
+
+pre.not-lang {
+	padding : 15px 10px !important; 
+}
+
+ul.indexes {
+padding:0px;
+list-style:none;
+}
+
+body > header {
+    background-color: #ddd;
+    padding: 20px 15px 15px 15px;
+    margin: 0 -15px;
+}
+
+.postPreview {
+    margin: 30px 0;
+}
+
+.postPreview > header {
+    margin: 5px 0;
+}
+.postPreview > header > h1 {
+    display: inline;
+    font-size: 24px;
+}
+
+time {
+    color: #666;
+    font-size: 18px;
+    font-style: italic;
+    margin-left: 10px;
+}
+
+
+a {
+    color: #333;
+}
+a:hover {
+    text-decoration: none;
+}
+
+.post {
+    margin: 30px 0;
+}
+
+.post > header {
+    margin: 15px 0;
+}
+.backLink {
+    display: block;
+    margin: 10px 0;
+}
+.post > header > h1 {
+    display: inline;
+    font-size: 32px;
+}
+.post > section > h2 {
+    font-size: 28px;
+    margin: 5px 0;
+}
+.post > section > h3 {
+    font-size: 24px;
+    margin: 10px 0;
+}
+
+.followupActions {
+    background-color: #ddd;
+    padding: 15px;
+    margin: 15px -15px;
+}
+
+.title {
+    display:inline
+}

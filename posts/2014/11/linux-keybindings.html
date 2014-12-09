@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>使用Linux命令行中的快捷键 - GongYong</title>
+    <meta charset="utf-8">
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link media="all" href="/css/style.css" type="text/css" rel="stylesheet" />
+
+<link href="/css/hljs.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+<header>
+    <a href='/'><strong>Gong Yong</strong></a>的Blog
+    <!--
+    我的 <a href="https://github.com/gywbd">GitHub</a>
+    ，
+    以及 <a href="/aboutMe.html">个人简介</a>。
+    -->
+</header>
+
+
+
+<section class="post">
+
+    <header>
+        <h2 class="title">使用Linux命令行中的快捷键</h2>
+        <time datetime="2014-11-08" pubdate="">
+            2014-11-08
+        </time>
+    </header>
+
+    <section>
+        <blockquote>
+<p>
+本文翻译自<a href="http://www.thegeekstuff.com/2014/05/linux-keybindings/">http://www.thegeekstuff.com/2014/05/linux-keybindings/</a>，学习Linux的人都会记住很多shell命令，这可以提高我们的工作效率，不过我们似乎很少会注意到命令行中的快捷键，这些快捷键可以提高我们使用命令行的效率。下面这篇文章就是关于这些快捷键的，enjoy it！
+</p>
+</blockquote>
+<p>
+快捷键(Keybinding)指将一个按键组合指定到某个动作。
+</p>
+<p>
+我们通常很熟悉的两个快捷键是：
+</p>
+<ul>
+    <li>Control-c ：复制</li>
+    <li>Control-v ：粘贴</li>
+</ul>
+<p>
+这篇文章会介绍命令行环境提供的一些默认的快捷键（也会告诉你在哪里找到这些命令，特别是当你忘记了的时候）。
+</p>
+<p>
+Linux命令行中有很默认的快捷键，它们使得编辑命令更方便。它们由一个名为Readine的工具提供。
+</p>
+<p>
+这里有一些是我经常用到的（如果你熟悉Emacs，对这些快捷键你会有些似曾相识的感觉）。
+</p>
+
+<h3>
+移动快捷键
+</h3>
+<p>
+下面这些快捷键用于移动：
+</p>
+
+<table>
+    <tbody><tr>
+        <td width="120px"><b>组合键</b></td>
+        <td width="550px"><b>描述</b></td>
+    </tr>
+    <tr>
+        <td>Control-a</td>
+        <td>将光标移到行首</td>
+    </tr>
+    <tr>
+        <td>Control-e</td>
+        <td>将光标移到当前行最后一个字符的后面</td>
+    </tr>
+    <tr>
+        <td>Control-f</td>
+        <td>将光标前移一个字符（跟方向键一样）</td>
+    </tr>
+    <tr>
+        <td>Control-b</td>
+        <td>将光标后移一个字符（跟方向键一样）</td>
+    </tr>
+</tbody></table>
+
+
+
+<h3>
+删除快捷键
+</h3>
+<p>下面这些快捷键用于删除操作：
+</p>
+<table>
+    <tbody><tr>
+        <td width="120px">组合键</td>
+        <td width="550px">描述</td>
+    </tr>
+    <tr>
+        <td>Control-k</td>
+        <td>删除光标后面的所有字符（包括光标）</td>
+    </tr>
+    <tr>
+        <td>Control-u</td>
+        <td>删除光标前面的所有字符（不包括光标）</td>
+    </tr>
+    <tr>
+        <td>Control-w</td>
+        <td>删除光标前面的单词（单词指由非空格符组成的字符序列）</td>
+    </tr>
+    <tr>
+        <td>Control-h</td>
+        <td>删除光标前面的字符（跟backspace一样）</td>
+    </tr>
+    <tr>
+        <td>Control-d</td>
+        <td>删除当前光标下面的字符（跟delete一样，如果当前光标下没有字符则退出）</td>
+    </tr>
+</tbody></table>
+
+<h3>
+历史快捷键
+</h3>
+<p>下面这些快捷键用于操作<a href="http://www.thegeekstuff.com/2008/08/15-examples-to-master-linux-command-line-history/">命令行历史记录</a>： 
+</p>
+<table>
+    <tbody><tr>
+        <td width="120px">组合键</td>
+        <td width="550px">描述</td>
+    </tr>
+    <tr>
+        <td>Control-p</td>
+        <td>切换到上一个命令</td>
+    </tr>
+    <tr>
+        <td>Control-n</td>
+        <td>切换到下一个命令</td>
+    </tr>
+    <tr>
+        <td>Control-r</td>
+        <td>反向索引查询（通过输入命令的一部分从命令历史中查询匹配的命令，根据命令使用时的时间逆序查询，也就是会先匹配最近使用的命令）</td>
+    </tr>
+</tbody></table>
+
+<h3>
+其他快捷键
+</h3>
+<p>
+下面的是一些其他的比较有用的快捷键
+</p>
+<table>
+    <tbody><tr>
+        <td width="120px">组合键</td>
+        <td width="550px">描述</td>
+    </tr>
+    <tr>
+        <td>Control-l</td>
+        <td>清除屏幕（类似clear命令）</td>
+    </tr>
+    <tr>
+        <td>Control-j</td>
+        <td>执行当前命令（类似回车键）</td>
+    </tr>
+    <tr>
+        <td>Control-c</td>
+        <td>终止当前命令，返回命令提示符</td>
+    </tr>
+    <tr>
+        <td>Control-？</td>
+        <td>撤销最后一次编辑</td>
+    </tr>
+    <tr>
+        <td>Control-/</td>
+        <td>重做最后一次撤销的编辑</td>
+    </tr>
+</tbody></table>
+
+
+<p>bind命令可以查看所有的快捷键（如果你忘记了某个快捷键的话，可以使用这个命令找到） </p>
+<pre>$ bind -p
+</pre>
+<p>
+这个命令的输出是这个样子
+</p>
+<pre>"\C-g": abort
+"\C-x\C-g": abort
+"\e\C-g": abort
+"\C-j": accept-line
+…
+</pre>
+
+<p>
+这个输出的格式是：
+</p>
+
+<pre>组合键 ： 绑定 </pre>
+<p>
+注意你必须使用这个格式来自定义快捷键。
+</p>
+
+<p>记住你可以使用<a href="http://www.thegeekstuff.com/2009/03/15-practical-unix-grep-command-examples/">grep</a>查找你感兴趣的绑定。
+
+</p>
+
+<p>例如下面这个命令查找所有使用了Control键的绑定：
+
+</p>
+
+<pre>$ bind -p | grep '\\c' </pre>
+
+<p>注意这里的有两个转义符，第一个转义符用于转义第二个反斜线。
+</p>
+    </section>
+
+    <footer>
+        <section class="followupActions">
+            如果你喜欢这篇文章，你可以在下面发表评论，你可能也会有兴趣<a href="/">浏览其他文章</a> 。
+        </section>
+    </footer>
+
+
+
+    <div id="SOHUCS" sid="0c69e0e0-75ea-11e4-8a0a-73dfd1b51c92"></div>
+</section>
+
+
+
+
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script src='/js/highlight.min.js'></script>
+<script>
+(function($){
+ $(function(){
+     hljs.configure({
+        tabReplace: '    '
+    });
+     $('.post pre').each(function(i,block){
+         hljs.highlightBlock(block);
+     });
+     //hljs.initHighlightingOnLoad();
+ });
+
+ }(jQuery));
+</script>
+<!--高速版，加载速度快，使用前需测试页面的兼容性-->
+<script>
+  (function(){
+    var appid = 'cyruMmQl9',
+    conf = 'prod_56838f5e72885e1172b2849c0d1c4b13';
+    var doc = document,
+    s = doc.createElement('script'),
+    h = doc.getElementsByTagName('head')[0] || doc.head || doc.documentElement;
+    s.type = 'text/javascript';
+    s.charset = 'utf-8';
+    s.src =  'http://assets.changyan.sohu.com/upload/changyan.js?conf='+ conf +'&appid=' + appid;
+    h.insertBefore(s,h.firstChild);
+    window.SCS_NO_IFRAME = true;
+  })()
+</script>                
+</body>
+</html>
+
+
