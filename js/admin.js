@@ -37,7 +37,7 @@
             title : new MediumEditor('.title-editor',{placeholder:"Title",disableToolbar:true,disableReturn:true,disableEditing:post_status === POST_STATUS_REMOVED}),
             keywords : new MediumEditor('.keywords-editor',{placeholder:"Keywords",disableToolbar:true,disableReturn:true,disableEditing:post_status === POST_STATUS_REMOVED}),
             desc : new MediumEditor('.desc-editor',{placeholder:"Description",disableToolbar:true,disableReturn:true,disableEditing:post_status === POST_STATUS_REMOVED}),
-            content : new MediumEditor('.content-editor',{placeholder:"Content",buttons:['bold', 'italic', 'underline', 'anchor', 'header1', 'header2', 'quote','pre','orderedlist','unorderedlist','strikethrough'],targetBlank:true,disableEditing:post_status === POST_STATUS_REMOVED,firstHeader:'h2',secondHeader:'h3'}),
+            content : new MediumEditor('.content-editor',{placeholder:"Content",buttons:['bold', 'italic', 'underline', 'anchor', 'header1', 'header2', 'image','quote','pre','orderedlist','unorderedlist','strikethrough'],targetBlank:true,disableEditing:post_status === POST_STATUS_REMOVED,firstHeader:'h2',secondHeader:'h3'}),
             getValue : function(editorType) {
                 var _this = this,
                     result = {},
