@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>了解http协议和restful规范 - GongYong</title>
+    <meta charset="utf-8">
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link media="all" href="/css/style.css" type="text/css" rel="stylesheet" />
+
+<link href="/css/hljs.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+<header>
+    <a href='/'><strong>Gong Yong</strong></a>的Blog
+    <!--
+    我的 <a href="https://github.com/gywbd">GitHub</a>
+    ，
+    以及 <a href="/aboutMe.html">个人简介</a>。
+    -->
+</header>
+
+
+
+<section class="post">
+
+    <header>
+        <h2 class="title">了解http协议和restful规范</h2>
+        <time datetime="2015-05-07" pubdate="">
+            2015-05-07
+        </time>
+    </header>
+
+    <section>
+        <p>最近几年任何一个互联网公司都自认为自己在做大数据，因为是大数据所以都要做一个数据中心用于内部的数据交换（这两者有没有逻辑关系不属于这篇文章要讨论的东西），而且任何一个做数据api的都想做成restful标准的api（实际上rest只是一种架构风格，<a href="http://www.ics.uci.edu/~fielding/" target="_blank">美国一个博士</a>搞出来的，这人还挺有名的，建议喜欢吹牛逼和偶像崇拜的花点时间了解下），鉴于大家基本上都把这个风格当作一种标准或者规范来用，我也就不在这里咬文嚼字，为了表述方便，我把它说成是restful规范。<br></p><p>restful规范实际上很简单，就是结合http协议来定义接口和接口的调用方式，通常用于做api，但是这里面涉及到很多名词，特别是跟http协议相关的名词，我个人觉得理解了这些名词就基本上理解了restful，再结合一下实践就基本上可以掌握rest这种api接口的架构风格，这也是本文的目的所在，先做一些名词解释，然后用php实现一个简单的restful风格的api。</p><h2>HTTP</h2><p>HTTP的全称是Hypertext Transfer Protocl，翻译成中文就是超文本传输协议，这个翻译很有意思，它总是会给人带来一个疑惑：什么叫做“超文本”？“文本”我们都知道是什么意思，但是什么是超文本呢？我从来没有看到有谁解释过，当然我也不想自作聪明来穿凿附会。我们只需要将其理解为在web上传输文本数据的一种协议，所谓协议就是一整套规则的集合，而HTTP中的这些规则就是用于规范web上的消息交换的。类似的协议还有POP3，它是跟邮件相关的。</p><p>在HTTP协议中，有两个不同的角色：服务器端和客户端。通常客户端负责发起会话，服务器端负责响应。HTTP协议是基于文本的，这个意思是通过它传递的消息都是文本字符，尽管消息体中有时可以包含其他的媒体类型（非文本数据，例如图片、视频，它们通常需要解码，而且传输的数据看起来像是乱码，实际上只是将二进制数据转换成了对应的文本字符而已），基于文本这点也使得HTTP协议传输的消息比较便于监控。</p><p>HTTP消息由消息头和消息体组成。消息体可以为空，它里面所包含的信息一般就是你想通过网络传输的东西，如果你想使用这些信息，你需要依据消息头中的一些相关数据。简单点说就是消息体中包含了要使用的数据，而消息头中包含了怎么使用这些数据的数据。我们把消息头中包含的数据称为元数据（用于描述数据的数据，这个翻译还挺赞的），例如有时候会碰到的乱码问题，就是跟消息头中的编码数据有关。除此以外，消息头中还包含了其他一些比较重要的东西，例如HTTP方法。在restful规范中，消息头一般比消息体更有价值。</p><h2>查看HTTP消息</h2><p>现在的浏览器都提供了相应的工具来查看HTTP消息，如果你使用的是Chrome，你可以使用它自带的开发者工具来查看HTTP消息。或者是在Firefox中使用Firebug来查看。我个人比较喜欢Firebug，我们访问google.com（可能会被强吧，那就换别的），然后打开firebug，点击net选项卡，打开它对应的面板，如果这个面板没有开启的话，则点击“开启”链接开启它，点击ALL选项卡下的某个请求你就可以看到HTTP传输的消息。</p><p>除了浏览器外还有一些其他的客户端，比较有名的就是cURL，cURL是一套命令行工具，一般的操作系统都有对应的版本，当你安装成功以后在命名行中输入：</p><pre>curl -v google.com</pre><p>你可以看到客户端和服务器端之间的会话。“&gt;”开头的行都是请求消息，”&lt;“开头的行都是响应消息。</p><h2>URL</h2><p>URL用于标识你想操作的东西，我们一般把这些东西称为资源（resource)，也是URL中“R”所代表的东西。这里说的URL跟网页的链接是同一个东西。实际上网页也是某种类型的资源。假设我们要实现一个公司的客户管理系统，那么下面的URL就用于标识公司所有客户的列表：</p><pre>/clients</pre><p>而下面的URL则用于标识名为jim的客户（假设客户的姓名是唯一的）：</p><pre>/clients/jim</pre><p>在这些示例中，我们没有在URL中包含主机名（hostname），这是因为它跟接口规范的设计没有多大关系。不过主机名对于确保资源标识符的唯一性来说很重要。我们经常会说为了某个资源给一个主机发送请求。在消息头中，主机名跟资源路径位于不同的部分，资源路径位于消息头的顶部，而主机名在其下面：</p><pre>GET /clients/jim HTTP/1.1<br><i>Host</i>: example.com</pre><p>资源最好使用名词来命名，实际上严格来的话就只能使用名词，使用动词都不能称为是RESTful的api，像下面的这个URL就不是：</p><pre>/clients/add</pre><p>上面的URL中使用了动词，所以这是用于描述某种动作，所以它不是RESTful的，这也是区分RESTful和非RESTful的关键所在（这实际上也说明RESTful没什么艰深之处，它之所以流行是因为它简单，特别是相对于web services的那套东西）。</p><p>URL必须尽可能简洁明了，任何一个URL都必须唯一地标识一个资源，除了URL外，不能在请求的任何其他地方包含标识资源的数据。我们可以把URL看作是应用数据所要处理的数据的地图。</p><p>那么现在问题来了，我们怎么标识动作呢？我们怎么告诉服务器要创建一个新的记录，而不是返回现有记录的数据呢？这个就是我们下面要讨论的东西：HTTP verbs。</p><h2>HTTP Verbs</h2><p>Verb对应的中文单词是“动词“，所谓HTTP Verbs就是我们通常说的HTTP方法，这个词并不好翻译，所以这里就直接是使用英文单词。</p><p>每个请求都会在请求头中指定一个特定的HTTP verb，它通常是请求头中的第一个全大写的单词，例如下面表示使用了GET方法：</p><pre>GET / HTTP/1.1</pre><p>而下面的头消息表示使用了DELETE请求：</p><pre>DELETE /clients/anne  HTTP/1.1</pre><p>HTTP Verbs就是告诉服务器对URL所标识的资源进行哪种操作。如果做过web表单开发，那么对GET和POST这两个verbs会比较熟悉。不过除了这两个外，还有很多其他可用的verbs。对于RESTful规范的Api而言，GET、POST、PUT和DELETE这四个verbs才是最常用的。有几个其他的verbs也会用到，例如HEAD和OPTIONS，不过很少见（如果你有兴趣了解其他的verbs，在这个可以找到http://www.ietf.org/rfc/rfc2616.txt）。</p><h3>GET</h3><p>GET是最简单的HTTP请求方法，每次我们在浏览器中输入一个URL，或者点击页面的某个链接时，我们使用的都是GET请求。它会告诉服务器返回URL所标识的数据。任何GET请求都不应该造成服务器端修改数据，这也就是说GET请求是只读的（这个并不严格，例如我们浏览一个页面，会改变页面的浏览次数，而这个浏览次数就是保存在服务器端的数据）。</p><h3>PUT</h3><p>PUT用在需要新建或者更新资源的时候，例如：</p><pre>PUT /clients/robin</pre><p>它可能会在服务器端创建一个名为robin的客户。你可以把要创建或者更新的数据包含在PUT请求的消息体里面，如果使用cURL的话就是通过-d选项来指定数据：</p><pre>curl -v -X PUT -d “hello there”</pre><h3>DELETE</h3><p>DELETE跟PUT刚好相反，它用于删除某个资源：</p><pre>curl -v -X DELETE /clients/anne</pre><p>上面的命令会删除/clients/anne这个URL标识的资源。</p><h3>POST</h3><p>POST方用于处理你希望会在服务器上重复进行的情况。POST请求应该把请求体作为URL的一部分来发送：</p><p>例如：</p><pre>POST /clients/</pre><p>这本身不应该改变/clients/所指定的资源，除了URL是以/clients/开头的资源。例如，你可以以服务器生成的id来添加一个新的客户：</p><pre>/clients/some-unique-id</pre><p>PUT请求可以用于替代POST请求，反过来也成立。有些系统只使用其中一个，有些则把POST用于创建操作，PUT则用于更新操作（这是因为PUT请求总是需要提供一个完整的URL），当然也有些把PUT用于创建，而POST用于更新。</p><p>通常情况下，POST请求会被用于触发服务器上的操作，这些操作并不符合Create/Update/Delete范式；但这已超出了REST的范畴。在我们的示例中，我们统一使用PUT。</p><h2>给HTTP方法分类</h2><p><b>安全和非安全方法：<br></b>安全方法是指永远不会修改资源的方法。上面介绍的4个方法中唯一安全的就是GET方法。其他的都是非安全的，就是因为它们都有可能造成资源的修改。</p><p><b>幂等方法：<br></b>幂等是一个数学概率，在数学中幂等运算是指某个运算无论执行多少次得到的结果都是相同的，例如与1或者0相乘总是得到同一个数。这里所说的幂等方法是指无论某个方法的请求重复执行多少次得到的结果都是相同的，GET、PUT和DELETE是幂等的，POST不是幂等的。PUT和DELETE是幂等方法的可能有些难于理解，但是实际上稍微简单的分析下就可以搞清楚，当我们执行PUT请求，并且每次请求发送到服务器端的数据都一样的话，无论第一次是创建还是更新资源，以后的执行都会更新同一条资源，而且更新的数据完全一致，并且返回的数据也是完全相同的，所以任何一次执行的效果都是一样的。再看看DELETE，DELETE会删除资源，在发给服务器的数据一样的前提下，第一次会删除某个资源，然后这个资源就不存在了，返回成功，之后的操作就是删除一个不存在的资源，也可以理解为删除成功，因为资源不存在，所以就不用删除，但是它跟被删除了的效果一样，这有点扯，但是也许过程不一样，但是结果都是一样的，这就是幂等的。</p><p>有一点需要特别指出，上面的这些规定都只是HTTP这个协议的规定，但是你的程序有时候可能不会（也有可能是不需要）这么做，你也可能（可以）在GET请求中修改数据库，实际上有不少程序员喜欢通过GET请求来删除服务器端的数据，特别是在ajax请求中。另外对于删除资源而言，如果资源不存在我们可能会返回一个错误值提示要删除的资源不存在，这样DELETE就不是幂等方法了。对于这些用法都是不符合REST规范的，当然有时候你也未必一定要严格遵守它。</p><h2>Representations（表征）</h2><p>这个是REST中”RE“所对应的单词，我们把它翻译为”表征“（这个很晦涩），REST翻译成中文是”表征状态转移“，这个翻译也让人很难理解，而且实际上对于REST的英文全称也很难理解，不过我觉得没必要纠结于这些名词，而应该尽可能理解它的含义。</p><p>我个人觉得所谓表征状态转移指的就是HTTP客户端和HTTP服务器端交换通过URL标识的资源的信息。我们一般认为请求和响应包含了资源的某种表现（representation），这种表现实质上是一种格式化的信息，它表示了资源的某个状态，或者是这个状态的未来形态。消息头和消息体都是这种表现的一部分。</p><p>消息头包含元数据，它们都已由HTTP规范定义好了；它们只能是普通文本字符，而且文本的格式也已限定。</p><p>消息体可以包含任何格式的数据，这也是HTTP的强大所在，这个实际上是我们很少能够感受到的，不过我们一般浏览网页时的HTML数据都是包含在消息体中的，而且我们通过ajax传送的json格式的数据也是包含在消息体中的，还有普通文本、XML格式的数据、图片数据都可以包含在消息体中。对于同一种资源，我们可以通过设置消息头中请求元数据，或者是设置不同的URL，要求服务器返回不同的表现，例如服务器可以把某个资源组成HTML格式的数据发给浏览器，或者是组成JSON格式的数据发给应用程序。</p><p>HTTP响应应该指定消息体的内容类型（content type）。这可以通过设置消息头中设置Content-Type这个字段实现，例如：</p><pre>Content-Type : application/json</pre><p>我们在架构REST风格的API的时候需要尽可能考虑API的通用性，我们要尽可能返回多种不过格式的资源给客户端。</p><h2>HTTP客户端</h2><p>上面提到的cURL就是一种很强大的HTTP客户端，还有浏览器也可以说是HTTP客户端，不过它除了HTTP客户端的功能外，还有很多其他复杂的功能，例如页面渲染，解释执行javascript等。</p><p>我们下面会介绍一个RESTful API的示例应用程序，在这个示例中我们会使用cURL所提供的工具来测试。</p><h2>示例</h2><h3>前期准备</h3><p>我们要实现一个极其简单客户管理系统，这个系统只有一个接口，或者是说只有一个URL，就是/clients，对应不同的HTTP请求方法进行不同的操作：GET方法返回客户的列表，PUT方法创建或者更新客户，DELETE方法则表示删除客户。客户数据包含姓名和年龄，姓名是唯一的，我们把它保存到一个全局数组里面，姓名为key，年龄是value：</p><pre>array(<br>   “john”=&gt;20,<br>   “kate”=&gt;25,<br>   “jim”=&gt;30<br>);</pre><p>为了保证这个示例尽可能地简洁，我们不会使用任何框架，整个示例的代码都在一个名为server.php的文件中，假设我们的hostname为example.com，所以完整的URL为：</p><pre>http://example.com/clients<br>http://example.com/clients/name</pre><p>所以如果我们使用apache服务器的话则需要开启mod_rewrite模块，并且在apache的配置文件或者是.htaccess中包含URL重写规则。</p><h3>开发</h3><p>首先我们要获取URL，因为URL就是资源标识符，知道了URL，才知道我们要请求的资源。上面以及说了我们网站的URL是http://example.com/clients，所以我们要获取到/clients，这个可以从PHP的全局数组$_SERVER中得到：</p><pre>$_SERVER['REQUEST_URI']</pre><p>然后我们要获取HTTP方法来决定执行什么操作，这也可以从$_SERVER中得到：</p><pre>$_SERVER['REQUEST_METHOD']</pre><p>我们的示例需要先获取当前请求的URL，目前我们只处理”clients”开头的URL：</p><pre>//clients是用于存放客户数据的数组<br>$clientData = array(<br>    "john" =&gt; 20,<br>    "kate" =&gt; 25,<br>    "jim" =&gt; 30<br>);<br>//获取http方法<br>$method = $_SERVER['REQUEST_METHOD'];<br>$paths = explode("/",trim($_SERVER['REQUEST_URI']));<br>//resource的名称<br>$resource = array_shift($paths);<br>if($resource === 'clients') {<br>    $name = array_shift($paths);<br>    if(empty($name)) {<br>        handle_base($method);<br>    }else {<br>        handle_name($method,$name);<br>    }<br>}else {<br>    header("HTTP/1.1 404 Not Found");<br>}</pre><p>我只处理clients的资源，所以对于其他的URL直接返回404错误。上面的代码中会先获取HTTP方法和资源名，当资源名为clients的时候我们会进行处理，首先会从路径中获取客户姓名，当客户姓名为空的时候我们实际上处理的URL是”/clients”，这个是处理客户列表，handle_base这个方法会进行处理，”/clients/name”对应的资源是一个具体的客户，我们使用handle_name来处理。</p><p>我们看下handle_name处理的核心部分的代码：</p><pre>switch($method) {<br>  case 'PUT':<br>      create_contact($name);<br>      break;<br>  case 'DELETE':<br>      delete_contact($name);<br>      break;<br>  case 'GET':<br>      display_contact($name);<br>      break;<br>  default:<br>      header('HTTP/1.1 405 Method Not Allowed');<br>      header('Allow: GET, PUT, DELETE');<br>      break;<br>}</pre><p> </p><p> </p><p> </p><p>上面的代码使用switch语句来处理不同的方法，当请求的方法不支持的时候会返回错误，提示该方法不允许，注意此时的错误代码是405，这个叫做响应码，下面我们重点讨论HTTP协议中一些我们经常用到的响应码。</p><h2>响应码</h2><p>上面代码中的header函数就是将内容输出到响应的消息头，并且是以正确的格式，在服务器响应消息的消息头中包含有响应码，响应码用于通知请求的结果的情况，是成功了，还是失败了，或者是发生了什么错误。默认情况下，PHP会返回200响应码，这表示响应成功，返回需要的结果。</p><p>在浏览网页的时候我们经常会碰到404 Not Found这种情况，这里的响应码就是404，这也许是我们最熟悉的一个响应码，除了这个外还有很多其他的响应码。不过HTTP协议为了保证通用性，有些响应码的含义并非那么的明确，有时候我们对于要使用什么响应码可能会有些迷惑，不过对于RESTful API而言，我们要可能返回有意义的响应码，并且用响应码来表示请求和响应的结果的情况，我们下面介绍几个在REST中比较常用的响应码：</p><p><b>200 OK</b></p><p>这个响应码表示请求成功</p><p><b>201 Created</b></p><p>这个响应码表示请求成功并且创建了一个新的资源。通常用于PUT和POST请求</p><p><b>400 Bad Request</b></p><p>这个响应码表示请求有问题，规范上面用的malformed这个单词来描述，翻译成中文就是畸形的，我们不能说一个请求是畸形的，不过我觉得我们可以自行脑补这种请求是什么样子:)。这个响应码经常在数据验证不通过的时候返回</p><p><b>404 Not Found</b></p><p>这个响应码表示要请求的资源不存在。在URL所对应的资源不存在的时候就返回这个响应码</p><p><b>401 Unauthorized</b></p><p>这个响应码表示用户验证不通过，或者没有权限访问请求的资源</p><p><b>405 Method Not Allowed</b></p><p>这个在上面的示例中出现过，当服务器无法处理请求的方法的时候可以返回这个响应码</p><p><b>409 Conflict</b></p><p>这个表示发生冲突，例如当你发送PUT请求要求创建一个已存在的资源的时候</p><p><b>500 Internal Server Error</b></p><p>这个响应码通过表示应用程序内部代码发生了错误，这个是由服务器自动发出的</p><h2>测试我们的示例应用</h2><p>上面的示例并不是完善，我们使用它只是为了显示一个RESTful的API需要处理的最基本的东西，现在假设这个示例可以访问，我们来使用cURL客户端来做一些测试。</p><p>首先我们获取姓名为jim的客户的信息：</p><pre>curl -v http://example.com/clients/jim</pre><p>我们会看到整个消息头和消息体，并且在消息体中包含了一段JSON格式的数据，这个就是jim的信息，注意这里我们没有指定请求的方法，默认情况下它就是GET请求。</p><p>然后我们要获取所有的客户的列表：</p><pre>curl -v http://example.com/clients/</pre><p>再创建一个新客户，名字为Paul：</p><pre>curl -v -X PUT http://example.com/clients/paul -d ‘{“age” : 30}’</pre><p>注意我们的-d选项后面的一个JSON格式的字符串，这个就是Paul的年龄信息。</p><p>我们现在要删除John，可以使用下面的命令：</p><pre>curl -v -X DELETE http://example.com/clients/john</pre><p>如果我们再执行上面的返回客户列表的命令的话就会发现john已经不存在了。</p><p>如果我们尝试返回一个不存在的客户的话：</p><pre>curl -v http://example.com/clients/jerry</pre><p>我们会得到404错误，或者我们尝试创建一个已存在的客户：</p><pre>curl -v -X PUT http://example.com/clients/kate</pre><p>我们会得到409错误。</p><h2>结语</h2><p>OK，我们的旅程也快结束了，通过这篇文章你可以基本上理解所谓REST风格的api是个什么样子，也会初步了解该怎么来创建这种风格的API。</p><p>最后有一点需要强调的是，REST跟HTTP协议集合很紧密，所以我们在设计REST风格的api的时候，要尽可能使用HTTP协议中已有的东西来实现，例如响应码，很多声称自己做的REST风格api的东西大多都是自己定义的响应码，还有对HTTP方法的使用也不严格，甚至有很多URL也跟资源标识毫无关系也要声称自己是在做RESTful API，对于这个问题我没兴趣进行无聊的争论，<a href="http://roy.gbiv.com/untangled/2008/rest-apis-must-be-hypertext-driven" target="_blank">实际上REST的提出者已经争论过了</a>。</p><p>对于我个人而言，REST的架构风格是很值得了解的，而且你可以从中学到很多HTTP协议相关的东西，忘了说，Roy T. Fielding博士也是HTTP协议的起草者之一，还是Apache服务器的开发者，以及Apache基金会的第一任主席。它关于REST架构风格的论文也得了<a href="http://roy.gbiv.com/untangled/2010/icse-most-influential-paper-award" target="_blank">ICSE的最具影响论文的大奖</a>，论文的英文版可以在它的官网上找到。中文版也有人翻译，有兴趣的自行搜索吧。</p>
+    </section>
+
+    <footer>
+        <!--
+        <section class="followupActions">
+            如果你喜欢这篇文章，你可以在下面发表评论，你可能也会有兴趣<a href="/">浏览其他文章</a> 。
+        </section>
+        -->
+    </footer>
+
+
+
+    <!-- <div id="SOHUCS" sid="c6776ce0-d856-11e4-8c3f-65d1487e2ef9"></div> -->
+</section>
+
+
+
+
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script src='/js/highlight.min.js'></script>
+<script>
+(function($){
+ $(function(){
+     hljs.configure({
+        tabReplace: '    '
+    });
+     $('.post pre').each(function(i,block){
+         hljs.highlightBlock(block);
+     });
+     //hljs.initHighlightingOnLoad();
+ });
+
+ }(jQuery));
+</script>
+<!--高速版，加载速度快，使用前需测试页面的兼容性-->
+<!--
+<script>
+  (function(){
+    var appid = 'cyruMmQl9',
+    conf = 'prod_56838f5e72885e1172b2849c0d1c4b13';
+    var doc = document,
+    s = doc.createElement('script'),
+    h = doc.getElementsByTagName('head')[0] || doc.head || doc.documentElement;
+    s.type = 'text/javascript';
+    s.charset = 'utf-8';
+    s.src =  'http://assets.changyan.sohu.com/upload/changyan.js?conf='+ conf +'&appid=' + appid;
+    h.insertBefore(s,h.firstChild);
+    window.SCS_NO_IFRAME = true;
+  })()
+</script>                
+-->
+</body>
+</html>
+
+
