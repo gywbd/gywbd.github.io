@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>调式PHP源码 - GongYong</title>
+    <meta charset="utf-8">
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link media="all" href="/css/style.css" type="text/css" rel="stylesheet" />
+
+<link href="/css/hljs.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+<header>
+    <a href='/'><strong>Gong Yong</strong></a>的Blog
+    <!--
+    我的 <a href="https://github.com/gywbd">GitHub</a>
+    ，
+    以及 <a href="/aboutMe.html">个人简介</a>。
+    -->
+</header>
+
+
+
+<section class="post">
+
+    <header>
+        <h2 class="title">调式PHP源码</h2>
+        <time datetime="2016-02-18" pubdate="">
+            2016-02-18
+        </time>
+    </header>
+
+    <section>
+        <p>我相信任何一个有点追求的PHP程序员都曾经有过阅读PHP源码的冲动，而且我估计这其中的很多人都没有将冲动转化为行动，即使有少部分人行为了，最终也难以维持——原因很简单：代码太多，太复杂了，完全无从下手——当然我也是这大多数人中的一员。实际上有时候我个人觉得从头一行一行地阅读源码未必是有必要的，甚至也未必是可行的。<br></p><p>如果这样的话，我们又怎么样才能知道PHP内部是怎么执行PHP程序的呢？阅读文档（PHP官方也没提供）和别人写的文章（例如我前段时间翻译的：<a href="http://gywbd.github.io/posts/2016/2/zend-execution-engine.html" target="_blank">深入理解Zend执行引擎</a>）这只能学到一些理论知识，而且读多了总是会感到有些缺失。程序设计本身就是一件实践性的工作，就像学某个程序设计语言一样，我们只有用这个语言写程序，运行所写的程序后才能掌握这门语言，例如我们学习PHP语言，我们会写上一段PHP代码，然后使用<i>echo/print/var_dump</i>之类的语句或者函数输出代码中的变量，然后才能确认某个函数或者语言特性的作用，这样实践多次之后就可以学会PHP的各种特性，从而达到掌握PHP语言的目的。那么我们是否可以在PHP内部源码中使用C语言中的<i>printf</i>函数（类似PHP中的<i>echo</i>）来输出我们想要检查的变量的值呢？这么做当然是可以的，但太繁琐了，光每次修改源码后重新编译的工作就会把人搞死，而且这种做法也非常业余。专业的做法就是调试PHP内部源码，使用调试工具来单步执行PHP源码，使用调试工具打印我们想查看的变量来确认源码是怎么工作的，这就是这篇文章的主题。</p><p>首先声明下这篇文章使用的调试工具是gdb，所有示例都是在类Unix平台下进行的（我是在Mac OS上进行操作的，当然Windows上也可以使用gdb，只是需要一些工具），另外为了讲解方面，我直接使用了命令行，你也可以使用eclipse之类的IDE工具进行调试，当然如果是在Windows上，你也可以使用VS来进行调试，不过貌似在Windows下编译PHP有些特殊，有这个需求的同学请自行搜索。另外这篇文章假设你至少了解一些gdb的基本用法（这篇文章也只用到了一些基本用法），我不会对gdb的使用进行介绍，对于完全不了解或者忘记了怎么使用gdb的同学，我强烈建议你去学习下gdb，如果你掌握了怎么使用gdb进行调试，那么你基本上可以自如地使用任何调式工具。</p><h2>编译PHP源码</h2><p>你可以从<a href="http://www.php.net/downloads.php" target="_blank">PHP官网下载PHP源码的压缩包</a>，或者是从<a href="http://git.php.net/" target="_blank">git.php.net</a>（或者是<a href="http://www.github.com/php/php-src" target="_blank">github</a>的镜像）的git库clone最新的代码库，然后切换到对应的PHP版本的分支，本文使用的是PHP5.6，你可以使用下面的命令完成这些工作：</p><pre>~&gt; git clone http://git.php.net/repository/php-src.git<br>~&gt; cd php-src<br>~/php-src&gt; git checkout PHP-5.6</pre><p>如果你是从git库中clone的代码，那么你先要运行下<i>buildconf</i>命令：</p><pre>~/php-src&gt; ./buildconf </pre><p>这个命令会生成configure脚本，从官网下载的源码包中会直接包含这个脚本，如果你执行buildconf出错，那么很可能是因为你的系统中没有autoconf这个工具，你可以使用包安装工具进行安装，例如Ubuntu下的apt-get，或者是Mac OS中的homebrew，关于编译时所需要的依赖包我就不作介绍了，基本上如果编译的时候出错，到网上去搜索出错信息就可以搞清楚你缺少什么依赖包。</p><p>如果你已经成功生成了configure脚本文件（或者是使用已包含这个脚本文件的源码包），那就可以开始编译了。为了调式PHP源码，我们的编译会disable所有的扩展（除了一些必须包含的外，这些PHP的编译脚本会自行处理），我们使用下面的命令来完成编译安装的工作，假设安装的路径为$HOME/myphp：</p><pre>~/php-src&gt; ./configure --disable-all --enable-debug --prefix=$HOME/myphp<br>~/php-src&gt; make -jN<br>~/php-src&gt; make install</pre><p>注意这里的<i>prefix</i>的参数必须为绝对路径，所以你不能写成<i>~/myphp</i>，另外我们这次编译只是为了调式，所以建议一定要设置<i>prefix</i>参数，要不然PHP会被安装到默认路径中，大多数时候是<i>/usr/local/php</i>中，这可能会造成一些没必要的污染。另外我们使用了两个选项，一个是<i>--disable-all</i>，这个表示禁止安装所有扩展（除了一个必须安装的），另外一个就是<i>--enable-debug</i>，这个选项表示以debug模式编译PHP源码，相当于gcc的<i>-g</i>选项，它会把调试信息编译进最终的二进制程序中。</p><p>上面的命令<i>make -jN</i>，N表示你的CPU数量（或者是CPU核心的数量），设置了这个参数后就可以使用多个CPU进行并行编译，这可以提高编译效率，尽管这在我们的这个示例中这么做的必要性不大。</p><p>ok，如果上面的命令都成功的话，最终用于调式的PHP二进制可以执行程序会安装在<i>~/myphp</i>这个文件夹中。</p><h2>使用gdb进行调式</h2><p>我们先看一个简单的示例，在命令行中执行下面的命令：</p><pre>~/myphp&gt; gdb --args bin/php -r "echo 'hello world';"</pre><p>如果没有出错的话，你会看到gdb的提示信息，在我的电脑上的输出为：</p><pre>GNU gdb (GDB) 7.8.1<br>Copyright (C) 2014 Free Software Foundation, Inc.<br>License GPLv3+: GNU GPL version 3 or later &lt;http://gnu.org/licenses/gpl.html&gt;<br>This is free software: you are free to change and redistribute it.<br>There is NO WARRANTY, to the extent permitted by law.  Type "show copying"<br>and "show warranty" for details.<br>This GDB was configured as "x86_64-apple-darwin14.0.0".<br>Type "show configuration" for configuration details.<br>For bug reporting instructions, please see:<br>&lt;http://www.gnu.org/software/gdb/bugs/&gt;.<br>Find the GDB manual and other documentation resources online at:<br>&lt;http://www.gnu.org/software/gdb/documentation/&gt;.<br>For help, type "help".<br>Type "apropos word" to search for commands related to "word"...<br>Reading symbols from bin/php...done.<br>(gdb)</pre><p>有一点要特别说明下，我们使用gdb调试时把PHP的命令放在gdb的<i>--args</i>选项后面，这表示把<u><i>-r “echo ‘hello world’;”</i></u>这个字符串作为你要调试的PHP可执行程序的参数，要不然gdb会把它们当作gdb的参数。</p><p>现在你就可以开始调式了，你可以先执行gdb的<i>run</i>命令，它表示运行你要调试的程序，由于现在没有设置任何断点，所以我们的程序会直接运行完并退出，并且会在屏幕上输出<i><u>hello world</u></i>这个字符串，具体情况如下：</p><pre>(gdb) run<br>Starting program: /Users/gongyong1/myphp/bin/php -r echo\ \'hello\ world\'\;<br>hello world[Inferior 1 (process 61782) exited normally]</pre><p> </p><p>我们现在随便设置一个断点。我们都知道PHP是用C编写的，所以它必然会有一个main函数，那么我们就在main的入口处设置一个断点：</p><pre>(gdb) break main<br>Breakpoint 1 at 0x100395230: file sapi/cli/php_cli.c, line 1211.</pre><p>断点设置成功，由于我们运行的程序是<i>bin/php</i>，这个程序是PHP的cli模式（确切的说是运行的sapi为cli），它的main函数位于sapi/cli/php_cli.c的第1211行。</p><p>设置好了断点，你就可以再次使用<i>run</i>命令运行你的程序了：</p><pre>(gdb) run<br>Starting program: /Users/gongyong1/myphp/bin/php -r echo\ \'hello\ world\'\;<br>Breakpoint 1, main (argc=3, argv=0x7fff5fbffab0) at sapi/cli/php_cli.c:1211<br>1211		int exit_status = SUCCESS;<br>(gdb) </pre><p>我们可以看到你的程序在main函数的第一行代码上中止了，你可以使用gdb的<i>next</i>命令单步执行，大概就是下面这个样子：</p><pre>(gdb) n<br>1212		int module_started = 0, sapi_started = 0;<br>(gdb) n<br>1213		char *php_optarg = NULL;<br>(gdb) n<br>1214		int php_optind = 1, use_extended_info = 0;<br>(gdb) n<br>1215		char *ini_path_override = NULL;<br>(gdb) n<br>1216		char *ini_entries = NULL;<br>(gdb)</pre><p><i>n</i>是<i>next</i>命令的简写形式，我们这里单步执行了5行代码。这个代码不是我们想探索的东西，所以我们使用<i>quit</i>命令退出调试：</p><pre>(gdb) quit<br>A debugging session is active.<br>	Inferior 1 [process 61784] will be killed.<br>Quit anyway? (y or n) y</pre><p>就这么简单，这样你基本上就可以探索PHP内部的任何特性了。下面我通过一个示例来介绍下如何探索zend的执行引擎，关于zend执行引擎方面的理论知识请参见我上面提到的那篇文章。</p><h2>==判断</h2><p><a href="http://blog.ircmaxell.com/2012/07/the-anatomy-of-equals-opcode-analysis.html" target="_blank">ircmaxell有一篇blog</a>分析了判断一个整数和一个浮点数是否相等（使用==进行判断）时是否进行了zval的类型转换。blog中所使用的示例代码如下：</p><pre>&lt;?php<br>$i = 1;<br>$j = 1.0;<br>echo $i == $j;</pre><p>我们知道在PHP内部，上面的代码中的<i>$i</i>和<i>$j</i>都会用一个zval的结构体（struct）来表示：</p><pre>typedef struct _zval_struct {<br>    zvalue_value value;<br>    zend_uint refcount__gc;<br>    zend_uchar type;<br>    zend_uchar is_ref__gc;<br>} zval;</pre><p>其中用于保存变量的值的字段是<i>value</i>，它的类型是<i>zvalue_value</i>，这是一个联合体(union)：</p><pre>typedef union _zvalue_value {<br>    long lval;<br>    double dval;<br>    struct {<br>        char *val;<br>        int len;<br>    } str;<br>    HashTable *ht;<br>    zend_object_value obj;<br>} zvalue_value;</pre><p>如果变量的类型为整型，则使用<i>lval</i>这个字段存储它的值，如果是浮点型，则使用<i>dval</i>存储它的值。在zval结构体中有一个<i>zend_uchar</i>型的字段<i>type</i>来标识变量的类型，PHP内部提供了一些宏来表示变量的类型：</p><pre><b>Type tag</b>	<b>Storage location</b><br>IS_NULL	        none   <br>IS_BOOL	        long   lval<br>IS_LONG	        long   lval<br>IS_DOUBLE	double dval<br>IS_STRING	struct { char *val; int len; } str<br>IS_ARRAY	HashTable *ht<br>IS_OBJECT	zend_object_value obj<br>IS_RESOURCE	long lval</pre><p>另外PHP内部还提供了一些函数对zval进行类型转换，这里我们就不列出了，有兴趣的同学可以阅读<a href="http://www.phpinternalsbook.com/zvals/casts_and_operations.html" target="_blank">这篇文章</a>。所以对于判断一个整型和一个浮点型的变量是否相同的情况，PHP可以先进行zval转义，然后再判断，那么PHP是否是这么做的呢？</p><p>ircmaxell的blog已经给出了答案，PHP不是这么做的，他先使用vld输出上面代码的OPCode（直接复制自ircmaxell的blog）：</p><pre>line     # *  op           fetch  ext  return  operands<br>--------------------------------------------------------<br>   3     0  &gt;   EXT_STMT<br>         1      ASSIGN                         !0, 1<br>   4     2      EXT_STMT<br>         3      ASSIGN                         !1, 1<br>   5     4      EXT_STMT<br>         5      IS_EQUAL               ~2      !0, !1<br>         6      ECHO                           ~2<br>   6     7    &gt; RETURN                         1</pre><p>从中可以看出实现==操作的OPCode是<i>IS_EQUAL</i>，它的两个参数是<i>!0</i>和<i>!1</i>，这两个操作数都是CV类型（编译变量，compiled variable，如果你看过我之前的blog，应该会很清楚它的含义）。所以PHP内部会使用<i>ZEND_IS_EQUAL_SPEC_CV_CV_HANDLER</i>这个handler函数来实现这个操作，这个函数位于zend_vm_execute.h中，我们现在来调式这个代码，看看这个函数是怎么执行的。</p><p>我们先把上面的PHP代码保存到一个名为equal.php的文件中（我把这段代码再贴一次）：</p><pre>&lt;?php<br>$i = 1;<br>$j = 1.0;<br>echo $i == $j;</pre><p>然后使用gdb调式：</p><pre>gdb --args bin/php equal.php</pre><p>在<i>ZEND_IS_EQUAL_SPEC_CV_CV_HANDLER</i>这个函数上设置断点：</p><pre>(gdb) break ZEND_IS_EQUAL_SPEC_CV_CV_HANDLER<br>Breakpoint 1 at 0x10031ed8c: file Zend/zend_vm_execute.h, line 39515.</pre><p>然后使用<i>run</i>命令运行程序，我们看到程序会在断点处中止：</p><pre>(gdb) run<br>Starting program: /Users/gongyong1/myphp/bin/php equal.php<br>Breakpoint 1, ZEND_IS_EQUAL_SPEC_CV_CV_HANDLER (execute_data=0x1006953c8) at Zend/zend_vm_execute.h:39515<br>39515		USE_OPLINE</pre><p>39515行是这个函数体中的第一行代码，这个函数的代码是从第39513行开始的，我们可以在gdb中使用<i>list</i>命令显示这个函数名开始的20行代码：</p><pre>(gdb) list 39513,39533<br>39513	static int ZEND_FASTCALL  ZEND_IS_EQUAL_SPEC_CV_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)<br>39514	{<br>39515		USE_OPLINE<br>39516<br>39517		zval *result = &amp;EX_T(opline-&gt;result.var).tmp_var;<br>39518<br>39519		SAVE_OPLINE();<br>39520		ZVAL_BOOL(result, fast_equal_function(result,<br>39521			_get_zval_ptr_cv_BP_VAR_R(execute_data, opline-&gt;op1.var TSRMLS_CC),<br>39522			_get_zval_ptr_cv_BP_VAR_R(execute_data, opline-&gt;op2.var TSRMLS_CC) TSRMLS_CC));<br>39523<br>39524<br>39525		CHECK_EXCEPTION();<br>39526		ZEND_VM_NEXT_OPCODE();<br>39527	}<br>39528<br>39529	static int ZEND_FASTCALL  ZEND_IS_NOT_EQUAL_SPEC_CV_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)<br>39530	{<br>39531		USE_OPLINE<br>39532<br>39533		zval *result = &amp;EX_T(opline-&gt;result.var).tmp_var;</pre><p><i>ZEND_IS_EQUAL_SPEC_CV_CV_HANDLER</i>这个函数在39527结束，从上面的代码中可以看出真正执行equal操作的是<i>fast_equal_function</i>函数，我们再在这个函数上设置一个断点：</p><pre>(gdb) break fast_equal_function<br>Breakpoint 2 at 0x10036ee64: file Zend/zend_operators.h, line 885.</pre><p>然后再使用gdb的<i>continue</i>命令，这个命令会继续运行程序到下一个断点中止：</p><pre>(gdb) continue<br>Continuing.<br>Breakpoint 2, fast_equal_function (result=0x100695368, op1=0x1006c9470, op2=0x1006c9380) at Zend/zend_operators.h:885<br>885		if (EXPECTED(Z_TYPE_P(op1) == IS_LONG)) {</pre><p>完全在我们的预料之中，程序在<i>fast_equal_function</i>这个函数处中止了，这个函数位于Zend/zend_operators.h的883行到900行，我们使用list命令在gdb中把它的代码显示出来：</p><pre>(gdb) list 883,900<br>file: "/Users/gongyong1/php-dev/debug/php-src/Zend/zend_operators.h", line number: 883<br>file: "Zend/zend_operators.h", line number: 883<br>(gdb)</pre><p>晕，显示不出来，为什么呢？因为这个函数是<i>inline</i>的，debug信息中并没有这个函数的信息，我们直接从源文件中把它的代码扣出来吧：</p><pre>883 static zend_always_inline int fast_equal_function(zval *result, zval *op1, zval *op2 TSRMLS_DC)<br>884 {<br>885	if (EXPECTED(Z_TYPE_P(op1) == IS_LONG)) {<br>886		if (EXPECTED(Z_TYPE_P(op2) == IS_LONG)) {<br>887			return Z_LVAL_P(op1) == Z_LVAL_P(op2);<br>888		} else if (EXPECTED(Z_TYPE_P(op2) == IS_DOUBLE)) {<br>889			return ((double)Z_LVAL_P(op1)) == Z_DVAL_P(op2);<br>890		}<br>891	} else if (EXPECTED(Z_TYPE_P(op1) == IS_DOUBLE)) {<br>892		if (EXPECTED(Z_TYPE_P(op2) == IS_DOUBLE)) {<br>893			return Z_DVAL_P(op1) == Z_DVAL_P(op2);<br>894		} else if (EXPECTED(Z_TYPE_P(op2) == IS_LONG)) {<br>895			return Z_DVAL_P(op1) == ((double)Z_LVAL_P(op2));<br>896		}<br>897	}<br>898	compare_function(result, op1, op2 TSRMLS_CC);<br>899	return Z_LVAL_P(result) == 0;<br>900 }</pre><p>我们可以先在gdb中使用<i>print</i>命令查看下<i>op1</i>和<i>op2</i>的情况，由于<i>op1</i>和<i>op2</i>都是指针，所以需要使用*解指针：</p><pre>(gdb) print *op1<br>$3 = {value = {lval = 1, dval = 4.9406564584124654e-324, str = {val = 0x1 &lt;error: Cannot access memory at address 0x1&gt;, len = 1}, ht = 0x1, obj = {handle = 1, handlers = 0x1},<br>    ast = 0x1}, refcount__gc = 1, type = 1 '\001', is_ref__gc = 0 '\000'}<br>(gdb) print *op2<br>$4 = {value = {lval = 4607182418800017408, dval = 1, str = {val = 0x3ff0000000000000 &lt;error: Cannot access memory at address 0x3ff0000000000000&gt;, len = 1},<br>    ht = 0x3ff0000000000000, obj = {handle = 0, handlers = 0x1}, ast = 0x3ff0000000000000}, refcount__gc = 1, type = 2 '\002', is_ref__gc = 0 '\000'}</pre><p>我可以看到<i>op1</i>的<u>value.lval=1</u>，而<i>op2</i>的<u>value.dval=1</u>，它们的<i>value</i>的其他字段的值都是无效的（联合体只有一个有效字段），而且<i>op1</i>和<i>op2</i>的<i>type</i>字段的值分别为1和2。我们再来看下<i>fast_equal_function</i>这个函数是怎么执行的，我们使用<i>next</i>命令单步执行这个函数，看看这个过程执行了哪些代码：</p><pre>885		if (EXPECTED(Z_TYPE_P(op1) == IS_LONG)) {<br>(gdb) n<br>886			if (EXPECTED(Z_TYPE_P(op2) == IS_LONG)) {<br>(gdb) n<br>888			} else if (EXPECTED(Z_TYPE_P(op2) == IS_DOUBLE)) {<br>(gdb) n<br>889				return ((double)Z_LVAL_P(op1)) == Z_DVAL_P(op2);<br>(gdb) n<br>900	}<br>(gdb)</pre><p>断点是从885行开始，不断使用next命令后，<i>fast_equal_function</i>函数的886行、888行和889行被执行了，由于889行是一个return语句，所以这行代码执行后，这个函数就直接返回了。</p><p>简单的分析下可以发现这段代码会先判断<i>op1</i>的类型是否为<i>IS_LONG</i>，这个判断是成功的，然后再判断<i>op2</i>是否为<i>IS_LONG</i>，这个是失败的；然后再判断<i>op2</i>是否为<i>IS_DOUBLE</i>，这个是成功的，此时PHP内部会获取<i>op1</i>的值（就是<i>value.lval</i>），将它强制转换为double类型，然后与<i>op2</i>的值（就是<i>value.dval</i>）进行比较。所以很明显PHP并未使用任何函数对<i>op1</i>和<i>op2</i>这两个zval进行类型转换，而是直接对它们的值进行强制类型转换，再比较转换后的结果，并且PHP内部是将long型转换为double型，哪怕==的第一个操作数是long型，而不是把第二个操作数转换为第一个操作数的类型。</p><h2>总结</h2><p>在程序设计的世界，如果你想搞清楚某个程序是怎么运行的，你只需要一行一行它的代码，然后观察每行代码执行后所发生的改变。虽然对于大型的程序来说，这个工作会非常繁琐，但是如果你能够有效地使用调式工具，那么这个工作也并非无法完成。可以说只要环境允许，使用现代的调式工具，你可以调式任何程序的代码。</p><p>对于PHP程序员而言，了解PHP内部实现是提高PHP技术的一个非常有效的方法，甚至对于任何一个有追求的PHP程序员而言，这都是必经之路，而掌握PHP源码的调式显然会让你的进阶之路更方便快捷。希望这篇文章能够给你一些启示。</p>
+    </section>
+
+    <footer>
+        <!--
+        <section class="followupActions">
+            如果你喜欢这篇文章，你可以在下面发表评论，你可能也会有兴趣<a href="/">浏览其他文章</a> 。
+        </section>
+        -->
+    </footer>
+
+
+
+    <!-- <div id="SOHUCS" sid="bedfe570-d620-11e5-bf84-7186ca1206d1"></div> -->
+</section>
+
+
+
+
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script src='/js/highlight.min.js'></script>
+<script>
+(function($){
+ $(function(){
+     hljs.configure({
+        tabReplace: '    '
+    });
+     $('.post pre').each(function(i,block){
+         hljs.highlightBlock(block);
+     });
+     //hljs.initHighlightingOnLoad();
+ });
+
+ }(jQuery));
+</script>
+<!--高速版，加载速度快，使用前需测试页面的兼容性-->
+<!--
+<script>
+  (function(){
+    var appid = 'cyruMmQl9',
+    conf = 'prod_56838f5e72885e1172b2849c0d1c4b13';
+    var doc = document,
+    s = doc.createElement('script'),
+    h = doc.getElementsByTagName('head')[0] || doc.head || doc.documentElement;
+    s.type = 'text/javascript';
+    s.charset = 'utf-8';
+    s.src =  'http://assets.changyan.sohu.com/upload/changyan.js?conf='+ conf +'&appid=' + appid;
+    h.insertBefore(s,h.firstChild);
+    window.SCS_NO_IFRAME = true;
+  })()
+</script>                
+-->
+</body>
+</html>
+
+
